@@ -9,6 +9,7 @@
   --color-portfolio-dark: var(--dark);
   --color-portfolio-text: var(--text);
   --color-portfolio-border: var(--border);
+  --color-portfolio-card: var(--card-bg);
 }
 
 :root {
@@ -17,6 +18,14 @@
   --text: #94A3B8;
   --border: #1E293B;
   --card-bg: #1E293B;
+}
+
+:root.light {
+  --bg: #F8FAFC;
+  --dark: #0F172A;
+  --text: #475569;
+  --border: #E2E8F0;
+  --card-bg: #FFFFFF;
 }
 
 @layer base {
