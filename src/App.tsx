@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Menu, 
   X, 
@@ -25,7 +25,9 @@ import {
   Database,
   Layout,
   MessageSquare,
-  Utensils
+  Utensils,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI } from "@google/genai";
@@ -418,15 +420,36 @@ const getAIResponse = async (message: string, history: { role: string, parts: { 
 
 // --- Components ---
 
-const Navbar = ({ openChat }: { openChat: () => void }) => {
+const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme: 'light' | 'dark', toggleTheme: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(false);
+      }
+    };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
+
+  // Fix background scrolling when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const navLinks = [
     { name: 'Home', href: '#home' },
@@ -441,28 +464,48 @@ const Navbar = ({ openChat }: { openChat: () => void }) => {
   ];
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-slate-800/80 backdrop-blur-md border-b border-portfolio-border py-4' : 'bg-transparent py-6'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <a href="#home" className="text-2xl font-bold tracking-tighter text-portfolio-dark">
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled || isOpen ? 'bg-portfolio-bg border-b border-portfolio-border py-3 shadow-lg' : 'bg-transparent py-5'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+        <a href="#home" className="text-xl sm:text-2xl font-bold tracking-tighter text-portfolio-dark">
           HKJ<span className="text-portfolio-primary"></span>
         </a>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
           {navLinks.map(link => (
             <a 
               key={link.name} 
               href={link.href} 
-              className="text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors"
+              className="text-xs xl:text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors"
             >
               {link.name}
             </a>
           ))}
+          
+          {/* Theme Toggle Button (Desktop) */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-lg transition-all"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </div>
 
-        {/* Mobile Toggle */}
-        <div className="flex items-center gap-4 lg:hidden">
-          <button className="text-portfolio-dark" onClick={() => setIsOpen(true)}>
+        {/* Mobile Toggle & Theme Toggle */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-lg transition-all"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button 
+            className="p-2 text-portfolio-dark hover:bg-portfolio-primary/10 rounded-lg transition-colors" 
+            onClick={() => setIsOpen(true)}
+            aria-label="Open Menu"
+          >
             <Menu size={24} />
           </button>
         </div>
@@ -471,33 +514,65 @@ const Navbar = ({ openChat }: { openChat: () => void }) => {
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 bg-slate-800 z-[60] flex flex-col p-8"
-          >
-            <div className="flex justify-between items-center mb-12">
-              <div className="flex gap-4">
-              </div>
-              <button onClick={() => setIsOpen(false)} className="text-portfolio-dark">
-                <X size={32} />
-              </button>
-            </div>
-            <div className="flex flex-col gap-8 items-center">
-              {navLinks.map(link => (
-                <a 
-                  key={link.name} 
-                  href={link.href} 
-                  onClick={() => setIsOpen(false)}
-                  className="text-3xl font-bold text-portfolio-dark hover:text-portfolio-primary transition-colors"
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[280px] sm:w-[320px] bg-portfolio-bg z-[60] flex flex-col p-6 shadow-2xl lg:hidden overflow-y-auto overscroll-contain"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-lg transition-all"
+                  aria-label="Toggle Theme"
                 >
-                  {link.name}
+                  {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+                </button>
+                <button 
+                  onClick={() => setIsOpen(false)} 
+                  className="p-2 text-portfolio-dark hover:bg-portfolio-primary/10 rounded-lg transition-colors"
+                  aria-label="Close Menu"
+                >
+                  <X size={28} />
+                </button>
+              </div>
+              <div className="flex flex-col gap-4">
+                {navLinks.map((link, index) => (
+                  <motion.a 
+                    key={link.name} 
+                    href={link.href} 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => setIsOpen(false)}
+                    className="text-xl font-bold text-portfolio-dark hover:text-portfolio-primary transition-colors py-2 border-b border-portfolio-border/50"
+                  >
+                    {link.name}
+                  </motion.a>
+                ))}
+              </div>
+              <div className="mt-auto pt-8 flex justify-center gap-6">
+                <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
+                  <Github size={20} />
                 </a>
-              ))}
-            </div>
-          </motion.div>
+                <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain/" target="_blank" rel="noopener noreferrer" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
+                  <Linkedin size={20} />
+                </a>
+                <a href="mailto:himanshukhajanchijain@gmail.com" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
+                  <Mail size={20} />
+                </a>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </nav>
@@ -505,12 +580,12 @@ const Navbar = ({ openChat }: { openChat: () => void }) => {
 };
 
 const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-  <div className="mb-16 text-center">
+  <div className="mb-12 sm:mb-16 text-center px-4">
     <motion.h2 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-3xl md:text-4xl font-bold mb-4"
+      className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight"
     >
       {title}
     </motion.h2>
@@ -520,25 +595,25 @@ const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
-        className="text-portfolio-text max-w-2xl mx-auto"
+        className="text-portfolio-text max-w-2xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed"
       >
         {subtitle}
       </motion.p>
     )}
-    <div className="w-20 h-1.5 gradient-bg mx-auto mt-6 rounded-full" />
+    <div className="w-16 sm:w-20 h-1.5 gradient-bg mx-auto mt-4 sm:mt-6 rounded-full" />
   </div>
 );
 
 const SkillCard = ({ name, level, icon }: { name: string; level: number; icon?: React.ReactNode }) => (
-  <div className="bg-slate-800 p-6 rounded-2xl border border-portfolio-border card-shadow group hover:border-portfolio-primary transition-all duration-300">
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3">
-        {icon && <div className="text-portfolio-primary">{icon}</div>}
-        <h4 className="font-semibold text-portfolio-dark">{name}</h4>
+  <div className="bg-portfolio-card p-4 sm:p-6 rounded-2xl border border-portfolio-border card-shadow group hover:border-portfolio-primary transition-all duration-300">
+    <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {icon && <div className="text-portfolio-primary scale-90 sm:scale-100">{icon}</div>}
+        <h4 className="font-semibold text-portfolio-dark text-sm sm:text-base">{name}</h4>
       </div>
-      <span className="text-xs font-bold text-portfolio-primary">{level}%</span>
+      <span className="text-[10px] sm:text-xs font-bold text-portfolio-primary">{level}%</span>
     </div>
-    <div className="h-2 bg-portfolio-bg rounded-full overflow-hidden">
+    <div className="h-1.5 sm:h-2 bg-portfolio-bg rounded-full overflow-hidden">
       <motion.div 
         initial={{ width: 0 }}
         whileInView={{ width: `${level}%` }}
@@ -553,39 +628,39 @@ const SkillCard = ({ name, level, icon }: { name: string; level: number; icon?: 
 const ProjectCard = ({ project }: { project: Project }) => (
   <motion.div 
     whileHover={{ y: -10 }}
-    className="bg-slate-800 rounded-3xl overflow-hidden border border-portfolio-border card-shadow group"
+    className="bg-portfolio-card rounded-3xl overflow-hidden border border-portfolio-border card-shadow group h-full flex flex-col"
   >
-    <div className="relative h-64 overflow-hidden">
+    <div className="relative h-48 sm:h-64 overflow-hidden">
       <img 
         src={project.image} 
         alt={project.title} 
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         referrerPolicy="no-referrer"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-portfolio-dark/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-        <div className="flex gap-4">
+      <div className="absolute inset-0 bg-gradient-to-t from-portfolio-dark/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 sm:p-6">
+        <div className="flex gap-3 sm:gap-4">
           {project.github && (
-            <a href={project.github} target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-800 rounded-full text-portfolio-dark hover:bg-portfolio-primary hover:text-white transition-all">
-              <Github size={20} />
+            <a href={project.github} target="_blank" rel="noopener noreferrer" className="p-2 sm:p-3 bg-portfolio-card rounded-full text-portfolio-dark hover:bg-portfolio-primary hover:text-white transition-all">
+              <Github size={18} />
             </a>
           )}
           {project.demo && (
-            <a href={project.demo} className="p-3 bg-slate-800 rounded-full text-portfolio-dark hover:bg-portfolio-primary hover:text-white transition-all">
-              <ExternalLink size={20} />
+            <a href={project.demo} className="p-2 sm:p-3 bg-portfolio-card rounded-full text-portfolio-dark hover:bg-portfolio-primary hover:text-white transition-all">
+              <ExternalLink size={18} />
             </a>
           )}
         </div>
       </div>
     </div>
-    <div className="p-8">
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="text-xl font-bold group-hover:text-portfolio-primary transition-colors">{project.title}</h3>
-        <span className="text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md">{project.date}</span>
+    <div className="p-5 sm:p-8 flex-1 flex flex-col">
+      <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
+        <h3 className="text-lg sm:text-xl font-bold group-hover:text-portfolio-primary transition-colors line-clamp-1">{project.title}</h3>
+        <span className="text-[9px] sm:text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md whitespace-nowrap">{project.date}</span>
       </div>
-      <p className="text-portfolio-text text-sm mb-6 line-clamp-2">{project.description}</p>
-      <div className="flex flex-wrap gap-2">
+      <p className="text-portfolio-text text-xs sm:text-sm mb-4 sm:mb-6 line-clamp-2 flex-1">{project.description}</p>
+      <div className="flex flex-wrap gap-1.5 sm:gap-2">
         {project.tags.map(tag => (
-          <span key={tag} className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-portfolio-bg text-portfolio-text rounded-full border border-portfolio-border">
+          <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 sm:px-3 py-1 bg-portfolio-bg text-portfolio-text rounded-full border border-portfolio-border">
             {tag}
           </span>
         ))}
@@ -599,33 +674,33 @@ const InternshipCard = ({ internship }: { internship: Internship }) => (
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
-    className="bg-slate-800 p-8 rounded-[2.5rem] border border-portfolio-border card-shadow hover:border-portfolio-primary transition-all duration-300 group"
+    className="bg-portfolio-card p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-portfolio-border card-shadow hover:border-portfolio-primary transition-all duration-300 group"
   >
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <div className="flex items-center gap-4">
-        <div className="p-4 bg-portfolio-primary/10 text-portfolio-primary rounded-2xl group-hover:scale-110 transition-transform">
-          <Briefcase size={28} />
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 sm:mb-6 gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="p-3 sm:p-4 bg-portfolio-primary/10 text-portfolio-primary rounded-xl sm:rounded-2xl group-hover:scale-110 transition-transform">
+          <Briefcase size={24} className="sm:w-7 sm:h-7" />
         </div>
         <div>
-          <h4 className="text-xl font-bold text-portfolio-dark">{internship.program}</h4>
-          <p className="text-portfolio-primary font-semibold">{internship.organization}</p>
+          <h4 className="text-lg sm:text-xl font-bold text-portfolio-dark">{internship.program}</h4>
+          <p className="text-portfolio-primary font-semibold text-sm sm:text-base">{internship.organization}</p>
         </div>
       </div>
-      <span className="px-4 py-2 bg-portfolio-bg rounded-full text-xs font-bold text-portfolio-text border border-portfolio-border">
+      <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-portfolio-bg rounded-full text-[10px] sm:text-xs font-bold text-portfolio-text border border-portfolio-border">
         {internship.duration}
       </span>
     </div>
     
     <div className="space-y-4">
-      <p className="text-portfolio-text text-sm leading-relaxed font-medium bg-portfolio-bg/50 p-4 rounded-2xl border border-portfolio-border/50">
+      <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed font-medium bg-portfolio-bg/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-portfolio-border/50">
         {internship.shortDescription}
       </p>
       
-      <div className="space-y-3 pt-2">
+      <div className="space-y-2 sm:space-y-3 pt-1 sm:pt-2">
         {internship.longDescription.map((item, i) => (
-          <div key={i} className="flex gap-3 items-start">
+          <div key={i} className="flex gap-2 sm:gap-3 items-start">
             <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-portfolio-primary shrink-0" />
-            <p className="text-portfolio-text text-sm leading-relaxed">{item}</p>
+            <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed">{item}</p>
           </div>
         ))}
       </div>
@@ -639,6 +714,11 @@ const ChatAssistant = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (ope
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -654,7 +734,7 @@ const ChatAssistant = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (ope
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[100]">
+    <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[100]">
       <AnimatePresence>
         {isOpen && (
           <motion.div 
@@ -663,26 +743,26 @@ const ChatAssistant = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (ope
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
-            className="absolute bottom-20 right-0 w-80 md:w-96 bg-slate-800 rounded-3xl border border-portfolio-border card-shadow overflow-hidden flex flex-col h-[500px]"
+            className="absolute bottom-20 right-0 w-[calc(100vw-3rem)] sm:w-96 bg-portfolio-card rounded-3xl border border-portfolio-border card-shadow overflow-hidden flex flex-col h-[500px] sm:h-[600px] max-h-[70vh]"
           >
-            <div className="p-6 gradient-bg text-white flex justify-between items-center">
+            <div className="p-5 sm:p-6 gradient-bg text-white flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-xl">
                   <MessageSquare size={20} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm">AI Assistant</h4>
+                  <h4 className="font-bold text-xs sm:text-sm">AI Assistant</h4>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform">
+              <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform p-1">
                 <X size={20} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4 scrollbar-hide">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-portfolio-primary text-white rounded-tr-none' : 'bg-portfolio-bg text-portfolio-dark rounded-tl-none'}`}>
+                  <div className={`max-w-[85%] p-3 sm:p-4 rounded-2xl text-xs sm:text-sm ${msg.role === 'user' ? 'bg-portfolio-primary text-white rounded-tr-none' : 'bg-portfolio-bg text-portfolio-dark rounded-tl-none'}`}>
                     <div className="markdown-body prose dark:prose-invert prose-sm max-w-none">
                       <Markdown>{msg.parts[0].text}</Markdown>
                     </div>
@@ -691,23 +771,24 @@ const ChatAssistant = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (ope
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-portfolio-bg p-4 rounded-2xl rounded-tl-none flex gap-1">
+                  <div className="bg-portfolio-bg p-3 sm:p-4 rounded-2xl rounded-tl-none flex gap-1">
                     <div className="w-1.5 h-1.5 bg-portfolio-text/30 rounded-full animate-bounce" />
                     <div className="w-1.5 h-1.5 bg-portfolio-text/30 rounded-full animate-bounce [animation-delay:0.2s]" />
                     <div className="w-1.5 h-1.5 bg-portfolio-text/30 rounded-full animate-bounce [animation-delay:0.4s]" />
                   </div>
                 </div>
               )}
+              <div ref={chatEndRef} />
             </div>
 
-            <div className="p-4 border-t border-portfolio-border flex gap-2">
+            <div className="p-3 sm:p-4 border-t border-portfolio-border flex gap-2 bg-portfolio-card/50">
               <input 
                 type="text" 
                 placeholder="Ask me anything..." 
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
-                className="flex-1 p-3 bg-portfolio-bg rounded-xl text-sm outline-none focus:border-portfolio-primary border border-transparent transition-colors"
+                className="flex-1 p-3 bg-portfolio-bg rounded-xl text-xs sm:text-sm outline-none focus:border-portfolio-primary border border-transparent transition-colors"
               />
               <button 
                 onClick={handleSend}
@@ -725,7 +806,7 @@ const ChatAssistant = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (ope
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-16 h-16 gradient-bg text-white rounded-full flex items-center justify-center shadow-xl shadow-portfolio-primary/30 relative"
+        className="w-14 h-14 sm:w-16 sm:h-16 gradient-bg text-white rounded-full flex items-center justify-center shadow-xl shadow-portfolio-primary/30 relative"
       >
         {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
         {!isOpen && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full" />}
@@ -741,6 +822,25 @@ export default function App() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('portfolio-theme');
+      return (saved as 'light' | 'dark') || 'dark';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+    }
+    localStorage.setItem('portfolio-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const openChat = () => setIsChatOpen(true);
 
@@ -774,38 +874,39 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-portfolio-bg transition-colors duration-300">
-      <Navbar openChat={openChat} />
+      <Navbar openChat={openChat} theme={theme} toggleTheme={toggleTheme} />
 
       {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+      <section id="home" className="relative min-h-screen flex items-center pt-24 pb-12 overflow-hidden">
         {/* Background Blobs */}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-portfolio-primary/5 rounded-full blur-[120px] -z-10" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-portfolio-secondary/5 rounded-full blur-[120px] -z-10" />
+        <div className="absolute top-[-10%] right-[-10%] w-[70%] md:w-[50%] h-[50%] bg-portfolio-primary/5 rounded-full blur-[120px] -z-10" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[70%] md:w-[50%] h-[50%] bg-portfolio-secondary/5 rounded-full blur-[120px] -z-10" />
 
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="text-center lg:text-left order-2 lg:order-1"
           >
-            <span className="inline-block px-4 py-2 rounded-full bg-portfolio-primary/10 text-portfolio-primary text-sm font-bold mb-6">
+            <span className="inline-block px-4 py-2 rounded-full bg-portfolio-primary/10 text-portfolio-primary text-xs sm:text-sm font-bold mb-6">
               Available for Opportunities
             </span>
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6">
               Hello, I'm <span className="gradient-text">Himanshu Khajanchi</span>
             </h1>
-            <p className="text-xl text-portfolio-text mb-10 max-w-lg leading-relaxed">
+            <p className="text-lg sm:text-xl text-portfolio-text mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
               A Computer Science undergraduate passionate about backend development, problem solving, and machine learning.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <a href="#projects" className="px-8 py-4 gradient-bg text-white rounded-2xl font-bold shadow-lg shadow-portfolio-primary/20 hover:scale-105 transition-transform">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start">
+              <a href="#projects" className="px-8 py-4 gradient-bg text-white rounded-2xl font-bold shadow-lg shadow-portfolio-primary/20 hover:scale-105 active:scale-95 transition-transform">
                 View Projects
               </a>
               <a 
                 href={RESUME_DOWNLOAD_LINK} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="px-8 py-4 bg-slate-800 border border-portfolio-border text-portfolio-dark rounded-2xl font-bold hover:bg-portfolio-bg transition-colors flex items-center gap-2"
+                className="px-8 py-4 bg-portfolio-card border border-portfolio-border text-portfolio-dark rounded-2xl font-bold hover:bg-portfolio-primary/10 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <Download size={18} />
                 Download Resume
@@ -817,9 +918,9 @@ export default function App() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
+            className="relative order-1 lg:order-2"
           >
-            <div className="relative z-10 w-full aspect-square max-w-md mx-auto rounded-[3rem] overflow-hidden border-8 border-slate-800 card-shadow">
+            <div className="relative z-10 w-full aspect-square max-w-[280px] sm:max-w-sm md:max-w-md mx-auto rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden border-4 sm:border-8 border-slate-800 card-shadow">
               <img 
                 src="/himan-photo.jpg" 
                 alt="Himanshu Khajanchi" 
@@ -828,26 +929,26 @@ export default function App() {
               />
             </div>
             {/* Decorative Elements */}
-            <div className="absolute -top-6 -right-6 w-24 h-24 bg-portfolio-secondary rounded-full -z-10 animate-pulse" />
-            <div className="absolute -bottom-6 -left-6 w-32 h-32 border-4 border-portfolio-primary rounded-full -z-10" />
+            <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-16 h-16 sm:w-24 sm:h-24 bg-portfolio-secondary rounded-full -z-10 animate-pulse" />
+            <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 w-20 h-20 sm:w-32 sm:h-32 border-4 border-portfolio-primary rounded-full -z-10" />
           </motion.div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="section-spacing bg-slate-800">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="about" className="section-spacing bg-portfolio-card">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="About Me" subtitle="Passionate about technology and continuous learning." />
           
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative"
+              className="relative hidden sm:block"
             >
-              <div className="rounded-3xl overflow-hidden card-shadow border border-portfolio-border">
-                <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=800&h=1000" alt="Computer Science" className="w-full h-auto" referrerPolicy="no-referrer" />
+              <div className="rounded-3xl overflow-hidden card-shadow border border-portfolio-border aspect-[4/5] lg:aspect-auto">
+                <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=800&h=1000" alt="Computer Science" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </div>
             </motion.div>
 
@@ -855,34 +956,33 @@ export default function App() {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="space-y-6"
+              className="space-y-6 text-center sm:text-left"
             >
-              <h3 className="text-2xl font-bold">I'm a Computer Science student focused on Backend & ML.</h3>
-              <p className="text-portfolio-text leading-relaxed">
+              <h3 className="text-2xl sm:text-3xl font-bold">I'm a Computer Science student focused on Backend & ML.</h3>
+              <p className="text-portfolio-text leading-relaxed text-sm sm:text-base">
                 I am a Computer Science undergraduate at Lovely Professional University with a strong passion for backend development, problem solving, and machine learning applications. I enjoy building scalable and efficient systems using modern frameworks and applying clean coding practices to ensure maintainable software.
                 My primary expertise lies in Python and C++. I have experience developing backend services using Django and building machine learning solutions using Scikit-learn, Pandas, and NumPy. I am particularly interested in designing RESTful APIs and implementing clean architecture.
               </p>
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border">
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="p-5 sm:p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border text-left">
                   <User className="text-portfolio-primary mb-4" size={24} />
                   <h4 className="font-bold mb-2">Personal Info</h4>
-                  <ul className="text-sm space-y-2 text-portfolio-text">
+                  <ul className="text-xs sm:text-sm space-y-2 text-portfolio-text">
                     <li><span className="font-semibold text-portfolio-dark">Name:</span> Himanshu Khajanchi</li>
                     <li><span className="font-semibold text-portfolio-dark">Education:</span> B.Tech CSE (AI & ML)</li>
                     <li><span className="font-semibold text-portfolio-dark">Location:</span> Rajasthan, India</li>
                   </ul>
                 </div>
-                <div className="p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border">
+                <div className="p-5 sm:p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border text-left">
                   <Briefcase className="text-portfolio-secondary mb-4" size={24} />
                   <h4 className="font-bold mb-2">Interests</h4>
-                  <ul className="text-sm space-y-2 text-portfolio-text">
+                  <ul className="text-xs sm:text-sm space-y-2 text-portfolio-text">
                     <li>Backend Development</li>
                     <li>Machine Learning</li>
                     <li>DSA & Problem Solving</li>
                   </ul>
                 </div>
               </div>
-
             </motion.div>
           </div>
         </div>
@@ -890,16 +990,18 @@ export default function App() {
 
       {/* Skills Section */}
       <section id="skills" className="section-spacing">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="My Expertise" subtitle="A comprehensive toolkit of technical and professional skills." />
           
-          <div className="space-y-12">
+          <div className="space-y-16">
             <div>
-              <h3 className="text-xl font-bold mb-8 flex items-center gap-2">
-                <Code2 className="text-portfolio-primary" />
+              <h3 className="text-xl sm:text-2xl font-bold mb-8 flex items-center gap-3">
+                <div className="p-2 bg-portfolio-primary/10 rounded-lg">
+                  <Code2 className="text-portfolio-primary" size={24} />
+                </div>
                 Technical Proficiency
               </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {SKILLS.technical.map(skill => (
                   <React.Fragment key={skill.name}>
                     <SkillCard name={skill.name} level={skill.level} icon={skill.icon} />
@@ -909,11 +1011,13 @@ export default function App() {
             </div>
 
             <div>
-              <h3 className="text-xl font-bold mb-8 flex items-center gap-2">
-                <Layout className="text-portfolio-secondary" />
+              <h3 className="text-xl sm:text-2xl font-bold mb-8 flex items-center gap-3">
+                <div className="p-2 bg-portfolio-secondary/10 rounded-lg">
+                  <Layout className="text-portfolio-secondary" size={24} />
+                </div>
                 Soft Skills
               </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
                 {SKILLS.nonTechnical.map(skill => (
                   <React.Fragment key={skill.name}>
                     <SkillCard name={skill.name} level={skill.level} />
@@ -926,15 +1030,15 @@ export default function App() {
       </section>
 
       {/* Education Section */}
-      <section id="education" className="section-spacing bg-slate-800">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="education" className="section-spacing bg-portfolio-card">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Education Journey" subtitle="My academic background and milestones." />
           
           <div className="max-w-4xl mx-auto relative">
             {/* Timeline Line */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-portfolio-primary/30 -translate-x-1/2" />
+            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-portfolio-primary/30 -translate-x-1/2 hidden sm:block" />
             
-            <div className="space-y-12">
+            <div className="space-y-8 sm:space-y-12">
               {EDUCATION.map((edu, index) => (
                 <motion.div 
                   key={edu.degree}
@@ -942,26 +1046,26 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className={`relative flex flex-col md:flex-row gap-8 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''} pl-10 md:pl-0`}
+                  className={`relative flex flex-col md:flex-row gap-6 sm:gap-8 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''} sm:pl-0`}
                 >
                   {/* Timeline Dot */}
-                  <div className="absolute left-4 md:left-1/2 top-8 w-4 h-4 bg-portfolio-primary rounded-full -translate-x-1/2 z-10 border-4 border-slate-900" />
+                  <div className="absolute left-4 md:left-1/2 top-8 w-4 h-4 bg-portfolio-primary rounded-full -translate-x-1/2 z-10 border-4 border-slate-900 hidden sm:block" />
                   
                   <div className="md:w-1/2">
-                    <div className="bg-portfolio-bg p-8 rounded-3xl border border-portfolio-border card-shadow hover:border-portfolio-primary transition-colors">
+                    <div className="bg-portfolio-bg p-6 sm:p-8 rounded-3xl border border-portfolio-border card-shadow hover:border-portfolio-primary transition-colors">
                       <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-slate-800 rounded-2xl text-portfolio-primary">
+                        <div className="p-3 bg-portfolio-bg rounded-2xl text-portfolio-primary shrink-0">
                           <GraduationCap size={24} />
                         </div>
                         <div>
-                          <h4 className="font-bold text-lg">{edu.degree}</h4>
-                          <p className="text-portfolio-primary text-sm font-semibold">{edu.institution}</p>
+                          <h4 className="font-bold text-base sm:text-lg leading-tight">{edu.degree}</h4>
+                          <p className="text-portfolio-primary text-xs sm:text-sm font-semibold mt-1">{edu.institution}</p>
                         </div>
                       </div>
-                      <span className="inline-block px-3 py-1 bg-slate-800 rounded-full text-xs font-bold text-portfolio-text mb-4 border border-portfolio-border">
+                      <span className="inline-block px-3 py-1 bg-portfolio-bg rounded-full text-[10px] sm:text-xs font-bold text-portfolio-text mb-4 border border-portfolio-border">
                         {edu.year}
                       </span>
-                      <p className="text-portfolio-text text-sm leading-relaxed">
+                      <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed">
                         {edu.description}
                       </p>
                     </div>
@@ -976,9 +1080,9 @@ export default function App() {
 
       {/* Internship Section */}
       <section id="internships" className="section-spacing">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Work Experience" subtitle="Professional training and internships." />
-          <div className="max-w-4xl mx-auto space-y-8">
+          <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
             {INTERNSHIPS.map((internship, index) => (
               <InternshipCard key={index} internship={internship} />
             ))}
@@ -988,10 +1092,10 @@ export default function App() {
 
       {/* Projects Section */}
       <section id="projects" className="section-spacing">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Featured Projects" subtitle="A selection of my recent work and experiments." />
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {PROJECTS.map(project => (
               <React.Fragment key={project.title}>
                 <ProjectCard project={project} />
@@ -1002,21 +1106,21 @@ export default function App() {
       </section>
 
       {/* Certificates Section */}
-      <section id="certificates" className="section-spacing bg-slate-800">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="certificates" className="section-spacing bg-portfolio-card">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Certificates" subtitle="Validating my skills through industry-recognized programs." />
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {CERTIFICATES.map((cert, index) => {
               const CardContent = (
                 <>
-                  <div className="p-3 bg-slate-800 rounded-xl text-portfolio-secondary group-hover:scale-110 transition-transform">
+                  <div className="p-3 bg-portfolio-bg rounded-xl text-portfolio-secondary group-hover:scale-110 transition-transform shrink-0">
                     <Award size={24} />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-portfolio-dark mb-1">{cert.name}</h4>
-                    <p className="text-sm text-portfolio-text mb-2">{cert.issuer}</p>
-                    <span className="text-xs font-bold text-portfolio-secondary">{cert.date}</span>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-portfolio-dark mb-1 text-sm sm:text-base truncate">{cert.name}</h4>
+                    <p className="text-xs sm:text-sm text-portfolio-text mb-2 truncate">{cert.issuer}</p>
+                    <span className="text-[10px] sm:text-xs font-bold text-portfolio-secondary">{cert.date}</span>
                   </div>
                 </>
               );
@@ -1028,7 +1132,7 @@ export default function App() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className={`p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border flex items-start gap-4 hover:border-portfolio-secondary transition-colors group ${cert.link ? 'cursor-pointer' : ''}`}
+                  className={`p-5 sm:p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border flex items-start gap-4 hover:border-portfolio-secondary transition-colors group ${cert.link ? 'cursor-pointer' : ''}`}
                 >
                   {cert.link ? (
                     <a href={cert.link} target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 w-full h-full">
@@ -1046,30 +1150,30 @@ export default function App() {
 
       {/* Achievements Section */}
       <section id="achievements" className="section-spacing">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Key Achievements" subtitle="Recognition for hard work and dedication." />
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {ACHIEVEMENTS.map((ach, index) => {
               const CardContent = (
                 <>
-                  <div className="w-16 h-16 gradient-bg text-white rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 gradient-bg text-white rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform">
                     {ach.icon}
                   </div>
                   <div className="mb-2">
                     <span className="text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md uppercase tracking-wider">{ach.date}</span>
                   </div>
-                  <h4 className="text-xl font-bold mb-1">{ach.title}</h4>
+                  <h4 className="text-lg sm:text-xl font-bold mb-1">{ach.title}</h4>
                   {ach.organization && (
-                    <p className="text-portfolio-primary text-sm font-semibold mb-3">
+                    <p className="text-portfolio-primary text-xs sm:text-sm font-semibold mb-3">
                       {ach.organization}
                     </p>
                   )}
-                  <p className="text-portfolio-text text-sm leading-relaxed">
+                  <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed">
                     {ach.description}
                   </p>
                   {ach.link && (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-portfolio-primary font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-4 flex items-center justify-center gap-2 text-portfolio-primary font-bold text-[10px] sm:text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                       View Profile <ChevronRight size={14} />
                     </div>
                   )}
@@ -1083,7 +1187,7 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-slate-800 p-8 rounded-3xl border border-portfolio-border card-shadow text-center group relative overflow-hidden"
+                  className="bg-portfolio-card p-6 sm:p-8 rounded-3xl border border-portfolio-border card-shadow text-center group relative overflow-hidden"
                 >
                   {ach.link ? (
                     <a href={ach.link} target="_blank" rel="noopener noreferrer" className="block h-full">
@@ -1104,11 +1208,11 @@ export default function App() {
         {/* Background Accents */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-portfolio-primary/10 rounded-full blur-[100px]" />
         
-        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <div className="max-w-2xl mx-auto bg-white/5 backdrop-blur-lg p-12 rounded-[3rem] border border-white/10">
-            <FileText size={64} className="mx-auto mb-8 text-portfolio-primary" />
-            <h3 className="text-3xl font-bold mb-6 text-white">Download My Detailed Resume</h3>
-            <p className="text-white/60 mb-10 leading-relaxed">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <div className="max-w-2xl mx-auto bg-white/5 backdrop-blur-lg p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3rem] border border-white/10">
+            <FileText size={48} className="mx-auto mb-6 sm:mb-8 text-portfolio-primary sm:w-16 sm:h-16" />
+            <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-white">Download My Detailed Resume</h3>
+            <p className="text-sm sm:text-base text-white/60 mb-8 sm:mb-10 leading-relaxed">
               Interested in more details about my experience, projects, and academic background? Download my full resume in PDF format.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1116,18 +1220,18 @@ export default function App() {
                 href={RESUME_LINK} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="px-10 py-5 gradient-bg text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:scale-105 transition-transform shadow-2xl shadow-portfolio-primary/40"
+                className="px-8 py-4 sm:px-10 sm:py-5 gradient-bg text-white rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 hover:scale-105 transition-transform shadow-2xl shadow-portfolio-primary/40"
               >
-                <FileText size={24} />
+                <FileText size={20} className="sm:w-6 sm:h-6" />
                 View Resume
               </a>
               <a 
                 href={RESUME_DOWNLOAD_LINK} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="px-10 py-5 bg-white/10 text-white border border-white/20 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/20 transition-all"
+                className="px-8 py-4 sm:px-10 sm:py-5 bg-white/10 text-white border border-white/20 rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 hover:bg-white/20 transition-all"
               >
-                <Download size={24} />
+                <Download size={20} className="sm:w-6 sm:h-6" />
                 Download PDF
               </a>
             </div>
@@ -1137,47 +1241,47 @@ export default function App() {
 
       {/* Contact Section */}
       <section id="contact" className="section-spacing">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Get In Touch" subtitle="Have a question or want to collaborate? Drop me a message!" />
           
-          <div className="grid lg:grid-cols-2 gap-16">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="space-y-8"
+              className="space-y-8 text-center lg:text-left"
             >
-              <h3 className="text-2xl font-bold">Contact Information</h3>
-              <p className="text-portfolio-text leading-relaxed">
+              <h3 className="text-2xl sm:text-3xl font-bold">Contact Information</h3>
+              <p className="text-portfolio-text leading-relaxed max-w-lg mx-auto lg:mx-0">
                 I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions.
               </p>
               
-              <div className="space-y-6">
-                <a href="mailto:himanshukhajanchijain@gmail.com" className="flex items-center gap-6 p-6 bg-slate-800 rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-primary transition-colors group">
-                  <div className="p-4 bg-portfolio-primary/10 text-portfolio-primary rounded-xl group-hover:bg-portfolio-primary group-hover:text-white transition-colors">
+              <div className="space-y-4 sm:space-y-6">
+                <a href="mailto:himanshukhajanchijain@gmail.com" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-primary transition-colors group text-left">
+                  <div className="p-3 sm:p-4 bg-portfolio-primary/10 text-portfolio-primary rounded-xl group-hover:bg-portfolio-primary group-hover:text-white transition-colors shrink-0">
                     <Mail size={24} />
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-portfolio-text uppercase tracking-widest mb-1">Email Me</p>
-                    <p className="font-bold text-portfolio-dark">himanshukhajanchijain@gmail.com</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs font-bold text-portfolio-text uppercase tracking-widest mb-1">Email Me</p>
+                    <p className="font-bold text-portfolio-dark text-sm sm:text-base truncate">himanshukhajanchijain@gmail.com</p>
                   </div>
                 </a>
-                <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain" target="_blank" rel="noopener noreferrer" className="flex items-center gap-6 p-6 bg-slate-800 rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-secondary transition-colors group">
-                  <div className="p-4 bg-portfolio-secondary/10 text-portfolio-secondary rounded-xl group-hover:bg-portfolio-secondary group-hover:text-white transition-colors">
+                <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-secondary transition-colors group text-left">
+                  <div className="p-3 sm:p-4 bg-portfolio-secondary/10 text-portfolio-secondary rounded-xl group-hover:bg-portfolio-secondary group-hover:text-white transition-colors shrink-0">
                     <Linkedin size={24} />
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-portfolio-text uppercase tracking-widest mb-1">LinkedIn</p>
-                    <p className="font-bold text-portfolio-dark">linkedin.com/in/khajanchi-himanshu-jain</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs font-bold text-portfolio-text uppercase tracking-widest mb-1">LinkedIn</p>
+                    <p className="font-bold text-portfolio-dark text-sm sm:text-base truncate">linkedin.com/in/khajanchi-himanshu-jain</p>
                   </div>
                 </a>
-                <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="flex items-center gap-6 p-6 bg-slate-800 rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-dark transition-colors group">
-                  <div className="p-4 bg-portfolio-dark/5 text-portfolio-dark rounded-xl group-hover:bg-portfolio-dark group-hover:text-white transition-colors">
+                <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-dark transition-colors group text-left">
+                  <div className="p-3 sm:p-4 bg-portfolio-dark/5 text-portfolio-dark rounded-xl group-hover:bg-portfolio-dark group-hover:text-white transition-colors shrink-0">
                     <Github size={24} />
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-portfolio-text uppercase tracking-widest mb-1">GitHub</p>
-                    <p className="font-bold text-portfolio-dark">github.com/TheHKJ04</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs font-bold text-portfolio-text uppercase tracking-widest mb-1">GitHub</p>
+                    <p className="font-bold text-portfolio-dark text-sm sm:text-base truncate">github.com/TheHKJ04</p>
                   </div>
                 </a>
               </div>
@@ -1187,63 +1291,63 @@ export default function App() {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className={`bg-slate-800 p-10 rounded-[2.5rem] border transition-all duration-500 ${submitStatus === 'success' ? 'border-portfolio-primary shadow-2xl shadow-portfolio-primary/30' : 'border-portfolio-border card-shadow'}`}
+              className={`bg-portfolio-card p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border transition-all duration-500 ${submitStatus === 'success' ? 'border-portfolio-primary shadow-2xl shadow-portfolio-primary/30' : 'border-portfolio-border card-shadow'}`}
             >
-              <form onSubmit={handleContactSubmit} className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
+              <form onSubmit={handleContactSubmit} className="space-y-4 sm:space-y-6">
+                <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-portfolio-dark ml-1">Full Name</label>
+                    <label className="text-xs sm:text-sm font-bold text-portfolio-dark ml-1">Full Name</label>
                     <input 
                       type="text" 
                       placeholder="John Doe" 
                       required
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="w-full p-4 bg-portfolio-bg rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors text-portfolio-dark" 
+                      className="w-full p-3 sm:p-4 bg-portfolio-bg rounded-xl sm:rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors text-portfolio-dark text-sm" 
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-portfolio-dark ml-1">Email Address</label>
+                    <label className="text-xs sm:text-sm font-bold text-portfolio-dark ml-1">Email Address</label>
                     <input 
                       type="email" 
                       placeholder="john@example.com" 
                       required
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full p-4 bg-portfolio-bg rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors text-portfolio-dark" 
+                      className="w-full p-3 sm:p-4 bg-portfolio-bg rounded-xl sm:rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors text-portfolio-dark text-sm" 
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-portfolio-dark ml-1">Subject</label>
+                  <label className="text-xs sm:text-sm font-bold text-portfolio-dark ml-1">Subject</label>
                   <input 
                     type="text" 
                     placeholder="Project Inquiry" 
                     required
                     value={formData.subject}
                     onChange={e => setFormData({...formData, subject: e.target.value})}
-                    className="w-full p-4 bg-portfolio-bg rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors text-portfolio-dark" 
+                    className="w-full p-3 sm:p-4 bg-portfolio-bg rounded-xl sm:rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors text-portfolio-dark text-sm" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-portfolio-dark ml-1">Message</label>
+                  <label className="text-xs sm:text-sm font-bold text-portfolio-dark ml-1">Message</label>
                   <textarea 
                     placeholder="Tell me about your project..." 
                     required
                     value={formData.message}
                     onChange={e => setFormData({...formData, message: e.target.value})}
-                    className="w-full p-4 bg-portfolio-bg rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors h-40 resize-none text-portfolio-dark" 
+                    className="w-full p-3 sm:p-4 bg-portfolio-bg rounded-xl sm:rounded-2xl border border-portfolio-border outline-none focus:border-portfolio-primary transition-colors h-32 sm:h-40 resize-none text-portfolio-dark text-sm" 
                   />
                 </div>
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-5 gradient-bg text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform shadow-lg shadow-portfolio-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 sm:py-5 gradient-bg text-white rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-transform shadow-lg shadow-portfolio-primary/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {isSubmitting ? 'Sending...' : submitStatus === 'success' ? 'Message Sent!' : 'Send Message'}
                   <Send size={20} />
                 </button>
-                {submitStatus === 'error' && <p className="text-red-500 text-sm text-center">Something went wrong. Please try again.</p>}
+                {submitStatus === 'error' && <p className="text-red-500 text-xs sm:text-sm text-center">Something went wrong. Please try again.</p>}
               </form>
             </motion.div>
           </div>
@@ -1251,38 +1355,38 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-slate-800 border-t border-portfolio-border">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+      <footer className="py-12 bg-portfolio-card border-t border-portfolio-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left">
-            <a href="#home" className="text-2xl font-bold tracking-tighter text-portfolio-dark mb-4 block">
+            <a href="#home" className="text-xl sm:text-2xl font-bold tracking-tighter text-portfolio-dark mb-4 block">
               HKJ<span className="text-portfolio-primary"></span>
             </a>
-            <p className="text-sm text-portfolio-text">
+            <p className="text-xs sm:text-sm text-portfolio-text max-w-xs">
               Building scalable systems with clean code and modern frameworks.
             </p>
           </div>
 
-          <div className="flex gap-8">
-            <a href="#about" className="text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors">About</a>
-            <a href="#projects" className="text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors">Projects</a>
-            <a href="#contact" className="text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors">Contact</a>
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+            <a href="#about" className="text-xs sm:text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors">About</a>
+            <a href="#projects" className="text-xs sm:text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors">Projects</a>
+            <a href="#contact" className="text-xs sm:text-sm font-medium text-portfolio-text hover:text-portfolio-primary transition-colors">Contact</a>
           </div>
 
-          <div className="flex gap-4">
-            <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="p-3 bg-portfolio-bg rounded-full text-portfolio-text hover:text-portfolio-primary transition-all">
+          <div className="flex gap-4 sm:gap-6">
+            <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="p-3 bg-portfolio-bg rounded-full text-portfolio-text hover:text-portfolio-primary transition-all hover:scale-110">
               <Github size={20} />
             </a>
-            <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain/" target="_blank" rel="noopener noreferrer" className="p-3 bg-portfolio-bg rounded-full text-portfolio-text hover:text-portfolio-primary transition-all">
+            <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain/" target="_blank" rel="noopener noreferrer" className="p-3 bg-portfolio-bg rounded-full text-portfolio-text hover:text-portfolio-primary transition-all hover:scale-110">
               <Linkedin size={20} />
             </a>
-            <a href="mailto:himanshukhajanchijain@gmail.com" className="p-3 bg-portfolio-bg rounded-full text-portfolio-text hover:text-portfolio-primary transition-all">
+            <a href="mailto:himanshukhajanchijain@gmail.com" className="p-3 bg-portfolio-bg rounded-full text-portfolio-text hover:text-portfolio-primary transition-all hover:scale-110">
               <Mail size={20} />
             </a>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-portfolio-border text-center">
-          <p className="text-xs text-portfolio-text font-medium">
-            © 2026 HKJ — All Rights Reserved.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-portfolio-border text-center">
+          <p className="text-[10px] sm:text-xs text-portfolio-text font-medium">
+            © {new Date().getFullYear()} HKJ — All Rights Reserved.
           </p>
         </div>
       </footer>
