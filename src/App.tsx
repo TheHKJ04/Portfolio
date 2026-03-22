@@ -22,16 +22,9 @@ import {
   ChevronRight,
   User,
   Cpu,
-  Globe,
   Database,
   Layout,
   MessageSquare,
-  Settings,
-  Sun,
-  Moon,
-  Users,
-  Target,
-  Coffee,
   Utensils
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -45,6 +38,7 @@ interface Project {
   description: string;
   image: string;
   tags: string[];
+  date: string;
   features?: string[];
   github?: string;
   demo?: string;
@@ -67,6 +61,7 @@ interface Certificate {
 interface Achievement {
   title: string;
   description: string;
+  date: string;
   icon?: React.ReactNode;
   organization?: string;
   link?: string;
@@ -87,8 +82,19 @@ const RESUME_DOWNLOAD_LINK = "https://drive.google.com/uc?export=download&id=1Mb
 
 const PROJECTS: Project[] = [
   {
+    title: "Anime Store",
+    description: "A full-stack e-commerce platform designed for anime enthusiasts, featuring a modern UI and seamless user experience.",
+    date: "Feb' 2026",
+    features: ["Product catalog", "User authentication", "Shopping cart functionality", "Responsive design"],
+    github: "https://github.com/TheHKJ04/Anime-Store",
+    image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&q=80&w=800",
+    tags: ["Python","Django","HTML","CSS","JS"],
+    demo: "#"
+  },
+  {
     title: "Student Dropout Analysis using Machine Learning",
     description: "Built a machine learning pipeline using Logistic Regression, Random Forest, and Decision Trees to predict student dropout risk with ~91% accuracy.",
+    date: "Dec' 2025",
     features: ["Data preprocessing", "Model training", "Feature importance visualization", "Dropout trend analysis"],
     github: "https://github.com/TheHKJ04/Student-Dropout-Analysis-using-Machine-Learning",
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
@@ -98,6 +104,7 @@ const PROJECTS: Project[] = [
   {
     title: "Efficient Page Replacement Algorithm Simulator",
     description: "A Python simulator implementing FIFO, LRU, and Optimal page replacement algorithms with visualizations.",
+    date: "Mar' 2025",
     features: ["Memory frame simulation", "Page fault and hit ratio analysis", "Algorithm comparison charts"],
     github: "https://github.com/TheHKJ04/Efficient-Page-Replacement-Algorithm-Simulator",
     image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800",
@@ -105,17 +112,9 @@ const PROJECTS: Project[] = [
     demo: "#"
   },
   {
-    title: "Anime Store",
-    description: "A full-stack e-commerce platform designed for anime enthusiasts, featuring a modern UI and seamless user experience.",
-    features: ["Product catalog", "User authentication", "Shopping cart functionality", "Responsive design"],
-    github: "https://github.com/TheHKJ04/Anime-Store",
-    image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&q=80&w=800",
-    tags: ["Python","Django","HTML","CSS","JS"],
-    demo: "#"
-  },
-  {
     title: "BookMyShow",
     description: "A data analysis application that explores movie trends, ratings, and booking data using Python's data science stack.",
+    date: "Nov' 2024",
     features: ["Data cleaning and preprocessing", "Exploratory Data Analysis (EDA)", "Visualizing movie trends and ratings", "Statistical insights from booking data"],
     github: "https://github.com/TheHKJ04/BookMyShow-App",
     image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=800",
@@ -128,19 +127,19 @@ const EDUCATION: Education[] = [
   {
     degree: "B.Tech Computer Science and Engineering (Specialization in AI and ML)",
     institution: "Lovely Professional University, Phagwara, Punjab",
-    year: "2023 - Present",
+    year: "Aug' 2023 - Present",
     description: "Focusing on Backend Development and Machine Learning.Completed Summer Training at Cipher School (July 2025) focused on Product Management."
   },
   {
     degree: "Intermediate",
     institution: "St. Anselm's Sr. Sec. School, Nagaur, Rajasthan",
-    year: "2021 - 2022",
+    year: "Apr' 2021 - Mar' 2022",
     description: "Completed with 84% marks(PCMB)."
   },
   {
     degree: "Matriculation",
     institution: "St. Anselm's Sr. Sec. School, Nagaur, Rajasthan",
-    year: "2019 - 2020",
+    year: "Apr' 2019 - Mar' 2020",
     description: "Completed with 88% marks."
   }
 ];
@@ -271,12 +270,12 @@ const SKILLS = {
 const CERTIFICATES: Certificate[] = [
     { name: "Generative AI Certifications",
       issuer: "Infosys Springboard", 
-      date:"August' 2025", 
+      date:"Aug' 2025", 
       link:"https://drive.google.com/file/d/17RqIFLufbLPW1LIreSXNzXH537EFWlVJ/view?usp=sharing"  
     },
     { name: "Product Management", 
       issuer: "Cipher School", 
-      date:"July' 2025", 
+      date:"Jul' 2025", 
       link:"https://drive.google.com/file/d/1-1_So3-SDiGa3tS5sB4FuYgTxtE68EBG/view?usp=sharing"  
     },
     { name: "Data Structures & Algorithms (C++)", 
@@ -301,24 +300,28 @@ const ACHIEVEMENTS: Achievement[] = [
       title: "Advisory Member",
       organization: "Student Academic Advisory Committee – LPU",
       description: "Helping improve academic curriculum.",
+      date: "Apr' 2025 - Present",
       icon: <GraduationCap size={32} />
     },
     {
       title: "Student Placement Coordinator",
       organization: "LPU",
       description: "Coordinated 25+ placement drives and workshops.",
+      date: "Sep' 2024 - May' 2025",
       icon: <Briefcase size={32} />
     },
     {
       title: "Hostel Mess Student Representative",
       organization: "LPU",
       description: "Improved student meal plan and satisfaction.",
+      date: "Oct' 2023 - May' 2024",
       icon: <Utensils size={32} />
     },
     {
       title: "2nd Runner Up",
       organization: "Alien Quiz Quacks (LPU)",
       description: "Achievement in quiz competition.",
+      date: "Feb' 2024",
       icon: <Trophy size={32} />
     }
 ];
@@ -327,7 +330,7 @@ const INTERNSHIPS: Internship[] = [
   {
     organization: "Cipher School",
     program: "Summer Training",
-    duration: "July 2025",
+    duration: "Jul' 2025",
     shortDescription: "Completed intensive training focused on Product Management, learning about product lifecycle, market research, and user-centric design through hands-on case studies and strategic analysis.",
     longDescription: [
       "Completed a Summer Training program at Cipher School focused on strengthening core Product Management fundamentals and building a structured understanding of the product development lifecycle.",
@@ -340,10 +343,14 @@ const INTERNSHIPS: Internship[] = [
 
 // --- AI Service ---
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
 const getAIResponse = async (message: string, history: { role: string, parts: { text: string }[] }[]) => {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return "I'm sorry, but the AI Assistant is not configured yet. Please set the `GEMINI_API_KEY` in the environment variables (Render settings).";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     const model = "gemini-3-flash-preview";
     
     // Construct a comprehensive context from the portfolio data
@@ -389,10 +396,6 @@ const getAIResponse = async (message: string, history: { role: string, parts: { 
       - Use Markdown for formatting.
     `;
 
-    if (!process.env.GEMINI_API_KEY) {
-      return "I'm sorry, but the AI Assistant is not configured yet. Please set the `GEMINI_API_KEY` in the environment variables.";
-    }
-
     const response = await ai.models.generateContent({
       model,
       contents: [
@@ -406,7 +409,10 @@ const getAIResponse = async (message: string, history: { role: string, parts: { 
     return response.text || "I'm sorry, I couldn't process that request.";
   } catch (error) {
     console.error("AI Error:", error);
-    return "I'm having trouble connecting to my brain right now. Please try again later!";
+    if (error instanceof Error && error.message.includes('API key not valid')) {
+      return "The AI Assistant's API key is invalid. Please check your `GEMINI_API_KEY` in the Render environment variables.";
+    }
+    return "I'm having trouble connecting to my brain right now. Please check if the `GEMINI_API_KEY` is correctly set in your Render environment variables.";
   }
 };
 
@@ -572,7 +578,10 @@ const ProjectCard = ({ project }: { project: Project }) => (
       </div>
     </div>
     <div className="p-8">
-      <h3 className="text-xl font-bold mb-3 group-hover:text-portfolio-primary transition-colors">{project.title}</h3>
+      <div className="flex justify-between items-start mb-3">
+        <h3 className="text-xl font-bold group-hover:text-portfolio-primary transition-colors">{project.title}</h3>
+        <span className="text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md">{project.date}</span>
+      </div>
       <p className="text-portfolio-text text-sm mb-6 line-clamp-2">{project.description}</p>
       <div className="flex flex-wrap gap-2">
         {project.tags.map(tag => (
@@ -860,7 +869,7 @@ export default function App() {
                   <ul className="text-sm space-y-2 text-portfolio-text">
                     <li><span className="font-semibold text-portfolio-dark">Name:</span> Himanshu Khajanchi</li>
                     <li><span className="font-semibold text-portfolio-dark">Education:</span> B.Tech CSE (AI & ML)</li>
-                    <li><span className="font-semibold text-portfolio-dark">Location:</span> Punjab, India</li>
+                    <li><span className="font-semibold text-portfolio-dark">Location:</span> Rajasthan, India</li>
                   </ul>
                 </div>
                 <div className="p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border">
@@ -1046,6 +1055,9 @@ export default function App() {
                 <>
                   <div className="w-16 h-16 gradient-bg text-white rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform">
                     {ach.icon}
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md uppercase tracking-wider">{ach.date}</span>
                   </div>
                   <h4 className="text-xl font-bold mb-1">{ach.title}</h4>
                   {ach.organization && (
