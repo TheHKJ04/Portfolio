@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Menu, 
   X, 
@@ -20,6 +21,7 @@ import {
   FileText, 
   Send,
   ChevronRight,
+  ChevronLeft,
   User,
   Cpu,
   Database,
@@ -308,7 +310,7 @@ const ACHIEVEMENTS: Achievement[] = [
       title: "Dean's Top 10%",
       organization: "LPU",
       description: "Among the top performing students",
-      date: "Jan' 2026",
+      date: "Jan' 2026 - Present",
       icon: <GraduationCap size={32} />
     },
   {
@@ -708,12 +710,12 @@ const SkillCard = ({ name, icon }: { name: string; icon?: React.ReactNode }) => 
 );
 
 const SkillCategory = ({ title, icon, skills, colorClass }: { title: string, icon: React.ReactNode, skills: any[], colorClass: string }) => (
-  <div className="w-screen h-screen flex-shrink-0 flex items-center justify-center p-4 sm:p-8 lg:p-12">
+  <div className="w-screen min-h-[70vh] flex-shrink-0 flex items-center justify-center p-4 sm:p-8 lg:p-12 snap-center">
     <motion.div 
       initial={{ opacity: 0, scale: 0.8 }}
       whileInView={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
-      className={`p-6 sm:p-10 lg:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] backdrop-blur-3xl border-2 shadow-2xl w-full max-w-5xl flex flex-col items-center justify-center ${colorClass}`}
+      className={`p-6 sm:p-10 lg:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] backdrop-blur-3xl border-2 shadow-2xl w-full max-w-5xl flex flex-col items-center justify-center ${colorClass} will-change-transform`}
     >
       <div className="mb-6 sm:mb-10 text-center">
         <motion.div 
@@ -733,13 +735,16 @@ const SkillCategory = ({ title, icon, skills, colorClass }: { title: string, ico
           {title}
         </motion.h3>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full overflow-y-auto max-h-[50vh] pr-2 custom-scrollbar">
+      
+      {/* Grid on desktop, Horizontal swipe on mobile */}
+      <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-4 w-full overflow-x-auto sm:overflow-y-auto sm:max-h-[50vh] pb-4 sm:pb-0 sm:pr-2 custom-scrollbar snap-x snap-mandatory scrollbar-hide">
         {skills.map((skill, i) => (
           <motion.div
             key={skill.name}
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 + i * 0.05 }}
+            className="flex-shrink-0 w-[140px] sm:w-auto snap-center"
           >
             <SkillCard name={skill.name} icon={icon} />
           </motion.div>
@@ -750,44 +755,9 @@ const SkillCategory = ({ title, icon, skills, colorClass }: { title: string, ico
 );
 
 const HorizontalSkills = () => {
-  const targetRef = useRef<HTMLDivElement>(null);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    const updateWidth = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
-
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-  });
-
-  // Heading animations: Moves up and fades out in the first 25% of scroll
-  const headingY = useTransform(scrollYProgress, [0, 0.25, 0.35], [0, 0, -250]);
-  const headingOpacity = useTransform(scrollYProgress, [0, 0.22, 0.3], [1, 1, 0]);
-  const headingScale = useTransform(scrollYProgress, [0, 0.25, 0.35], [1, 1, 0.8]);
-
-  // Horizontal movement: 
-  // 0.00 - 0.25: Heading Intro (Categories off-screen)
-  // 0.25 - 0.35: Languages slide in
-  // 0.35 - 0.40: Languages stay
-  // 0.40 - 0.50: Libraries slide in
-  // 0.50 - 0.55: Libraries stay
-  // 0.55 - 0.65: Tools slide in
-  // 0.65 - 0.70: Tools stay
-  // 0.70 - 0.80: Databases slide in
-  // 0.80 - 0.85: Databases stay
-  // 0.85 - 0.95: Soft Skills slide in
-  // 0.95 - 1.00: Soft Skills stay
-  const xRaw = useTransform(
-    scrollYProgress,
-    [0, 0.25, 0.35, 0.40, 0.50, 0.55, 0.65, 0.70, 0.80, 0.85, 0.95, 1],
-    [windowWidth, windowWidth, 0, 0, -windowWidth, -windowWidth, -2 * windowWidth, -2 * windowWidth, -3 * windowWidth, -3 * windowWidth, -4 * windowWidth, -4 * windowWidth]
-  );
-
-  const x = useSpring(xRaw, { stiffness: 80, damping: 25, mass: 0.5 });
-  const containerOpacity = useTransform(scrollYProgress, [0.22, 0.28], [0, 1]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   const categories = [
     { title: "Languages", icon: <Code2 />, skills: SKILLS.Languages, color: "bg-blue-500/10 border-blue-500/40 text-blue-600 dark:text-blue-300" },
@@ -797,27 +767,70 @@ const HorizontalSkills = () => {
     { title: "Soft Skills", icon: <Layout />, skills: SKILLS.nonTechnical, color: "bg-pink-500/10 border-pink-500/40 text-pink-600 dark:text-pink-300" },
   ];
 
-  return (
-    <section ref={targetRef} className="relative h-[700vh] bg-portfolio-bg/10">
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        {/* Background Decorative Elements */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-portfolio-primary/20 rounded-full blur-[120px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-portfolio-secondary/20 rounded-full blur-[120px]" />
-        </div>
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
 
-        {/* Sticky Heading that moves up */}
-        <motion.div 
-          style={{ y: headingY, opacity: headingOpacity, scale: headingScale }}
-          className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none px-4"
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll);
+      checkScroll();
+      return () => el.removeEventListener('scroll', checkScroll);
+    }
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const scrollAmount = window.innerWidth * 0.8;
+      
+      if (direction === 'right') {
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+      } else {
+        if (scrollLeft <= 10) {
+          scrollRef.current.scrollTo({ left: scrollWidth, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
+      }
+    }
+  };
+
+  return (
+    <section id="skills" className="relative py-20 bg-portfolio-bg/10 overflow-hidden">
+      <div className="container mx-auto px-4 mb-12">
+        <SectionHeading title="My Expertise" subtitle="Explore my technical toolkit. Swipe or scroll horizontally to see more." />
+      </div>
+
+      <div className="relative group">
+        {/* Navigation Buttons - Always functional for circular scroll */}
+        <button 
+          onClick={() => scroll('left')}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-portfolio-dark shadow-xl transition-all duration-300 hover:bg-portfolio-primary hover:text-white hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100"
         >
-          <SectionHeading title="My Expertise" subtitle="Explore my technical toolkit one category at a time." />
-        </motion.div>
+          <ChevronLeft size={24} />
+        </button>
         
-        {/* Horizontal Categories container */}
-        <motion.div 
-          style={{ x, opacity: containerOpacity }} 
-          className="flex h-full items-center"
+        <button 
+          onClick={() => scroll('right')}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-portfolio-dark shadow-xl transition-all duration-300 hover:bg-portfolio-primary hover:text-white hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100"
+        >
+          <ChevronRight size={24} />
+        </button>
+
+        {/* Horizontal Scroll Container */}
+        <div 
+          ref={scrollRef}
+          className="flex overflow-x-auto gap-0 snap-x snap-mandatory scrollbar-hide cursor-grab active:cursor-grabbing py-12 -my-12"
         >
           {categories.map((cat, i) => (
             <SkillCategory 
@@ -828,27 +841,15 @@ const HorizontalSkills = () => {
               colorClass={cat.color}
             />
           ))}
-        </motion.div>
+        </div>
+      </div>
 
-        {/* Progress Dots */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-30">
-          {categories.map((_, i) => {
-            // Adjust range for progress dots
-            const start = 0.25 + (i * (0.75 / categories.length));
-            const end = 0.25 + ((i + 1) * (0.75 / categories.length));
-            const range = [start, (start + end) / 2, end];
-            
-            const scale = useTransform(scrollYProgress, range, [1, 1.5, 1]);
-            const opacity = useTransform(scrollYProgress, range, [0.3, 1, 0.3]);
-            
-            return (
-              <motion.div
-                key={i}
-                style={{ scale, opacity }}
-                className="w-3 h-3 rounded-full bg-portfolio-primary shadow-lg"
-              />
-            );
-          })}
+      {/* Swipe Indicator for Mobile */}
+      <div className="flex justify-center mt-8 md:hidden">
+        <div className="flex gap-2">
+          {categories.map((_, i) => (
+            <div key={i} className="w-2 h-2 rounded-full bg-portfolio-primary/30" />
+          ))}
         </div>
       </div>
     </section>
@@ -912,10 +913,13 @@ const CertificateCard = ({ cert, index }: { cert: Certificate, index: number }) 
       <div className="p-3 bg-portfolio-bg rounded-2xl text-portfolio-secondary group-hover:scale-110 transition-transform shrink-0">
         <Award size={24} />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <h4 className="font-bold text-portfolio-dark mb-1 text-sm sm:text-base truncate">{cert.name}</h4>
         <p className="text-xs sm:text-sm text-portfolio-text mb-2 truncate">{cert.issuer}</p>
-        <span className="text-[10px] sm:text-xs font-bold text-portfolio-secondary">{cert.date}</span>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] sm:text-xs font-bold text-portfolio-secondary">{cert.date}</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-portfolio-primary opacity-0 group-hover:opacity-100 transition-opacity">Hover to Preview</span>
+        </div>
       </div>
     </div>
   );
@@ -926,11 +930,16 @@ const CertificateCard = ({ cert, index }: { cert: Certificate, index: number }) 
         key={cert.name}
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.05, y: 12, zIndex: 50 }}
         viewport={{ once: true }}
-        transition={{ delay: index * 0.1 }}
+        transition={{ 
+          delay: index * 0.1,
+          scale: { type: "spring", stiffness: 400, damping: 10 },
+          y: { type: "spring", stiffness: 400, damping: 10 }
+        }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`p-5 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 hover:border-portfolio-secondary transition-all duration-500 group relative z-10 ${cert.link ? 'cursor-pointer' : ''}`}
+        className={`p-5 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 hover:border-portfolio-secondary transition-shadow duration-300 group relative z-10 shadow-lg hover:shadow-2xl ${cert.link ? 'cursor-pointer' : ''}`}
       >
         {cert.link ? (
           <a href={cert.link} target="_blank" rel="noopener noreferrer">
@@ -944,12 +953,11 @@ const CertificateCard = ({ cert, index }: { cert: Certificate, index: number }) 
       <AnimatePresence>
         {isHovered && cert.link && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.8, rotateX: -10 }}
-            animate={{ opacity: 1, y: -20, scale: 1, rotateX: 0 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9, rotateX: -5 }}
+            initial={{ opacity: 0, y: -20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 10, scale: 1 }}
+            exit={{ opacity: 0, y: 0, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="absolute bottom-full left-0 right-0 z-50 mb-4 h-64 sm:h-80 bg-portfolio-card rounded-3xl border-2 border-portfolio-secondary/30 shadow-2xl overflow-hidden pointer-events-none origin-bottom"
-            style={{ perspective: "1000px" }}
+            className="absolute top-full left-0 right-0 z-50 mt-4 h-64 sm:h-80 bg-portfolio-card rounded-3xl border-2 border-portfolio-secondary/30 shadow-2xl overflow-hidden origin-top"
           >
             <div className="absolute inset-0 bg-portfolio-bg/50 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-portfolio-secondary" />
@@ -968,6 +976,33 @@ const CertificateCard = ({ cert, index }: { cert: Certificate, index: number }) 
     </div>
   );
 };
+
+const AchievementContent = ({ ach }: { ach: Achievement }) => (
+  <>
+    <div className="flex items-center gap-4 mb-4">
+      <div className="w-12 h-12 sm:w-14 sm:h-14 gradient-bg text-white rounded-2xl flex items-center justify-center shrink-0 group-hover:rotate-12 transition-transform">
+        {ach.icon}
+      </div>
+      <div>
+        <span className="text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md uppercase tracking-wider inline-block mb-1">{ach.date}</span>
+        <h4 className="text-base sm:text-lg font-bold leading-tight">{ach.title}</h4>
+      </div>
+    </div>
+    {ach.organization && (
+      <p className="text-portfolio-primary text-xs sm:text-sm font-semibold mb-3">
+        {ach.organization}
+      </p>
+    )}
+    <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed">
+      {ach.description}
+    </p>
+    {ach.link && (
+      <div className="mt-4 flex items-center gap-2 text-portfolio-primary font-bold text-[10px] sm:text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+        View Profile <ChevronRight size={14} />
+      </div>
+    )}
+  </>
+);
 
 const InternshipCard = ({ internship }: { internship: Internship }) => (
   <motion.div 
@@ -1116,6 +1151,94 @@ const ChatAssistant = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (ope
 };
 
 // --- Main App ---
+
+const HorizontalCertificates = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll);
+      checkScroll();
+      return () => el.removeEventListener('scroll', checkScroll);
+    }
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const scrollAmount = window.innerWidth * 0.8;
+      
+      if (direction === 'right') {
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+      } else {
+        if (scrollLeft <= 10) {
+          scrollRef.current.scrollTo({ left: scrollWidth, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
+      }
+    }
+  };
+
+  return (
+    <section id="certificates" className="section-spacing relative bg-portfolio-bg/5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <SectionHeading title="Certificates" subtitle="Validating my skills through industry-recognized programs." />
+        
+        <div className="relative group">
+          {/* Navigation Buttons - Always functional for circular scroll */}
+          <button 
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-portfolio-dark shadow-xl transition-all duration-300 hover:bg-portfolio-primary hover:text-white hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          
+          <button 
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-portfolio-dark shadow-xl transition-all duration-300 hover:bg-portfolio-primary hover:text-white hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          {/* Horizontal Scroll Container */}
+          <div 
+            ref={scrollRef}
+            className="flex overflow-x-auto gap-6 pt-12 pb-[400px] -mt-12 -mb-[400px] snap-x snap-mandatory scrollbar-hide px-4 -mx-4"
+          >
+            {CERTIFICATES.map((cert, index) => (
+              <div key={cert.name} className="flex-shrink-0 w-[280px] sm:w-[350px] snap-center">
+                <CertificateCard cert={cert} index={index} />
+              </div>
+            ))}
+          </div>
+          
+          {/* Swipe Indicator for Mobile */}
+          <div className="flex justify-center gap-2 mt-4 md:hidden">
+            {CERTIFICATES.map((_, i) => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full bg-portfolio-primary/30" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -1336,69 +1459,48 @@ export default function App() {
       </section>
 
       {/* Certificates Section */}
-      <section id="certificates" className="section-spacing relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <SectionHeading title="Certificates" subtitle="Validating my skills through industry-recognized programs." />
-          
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {CERTIFICATES.map((cert, index) => (
-              <CertificateCard key={cert.name} cert={cert} index={index} />
-            ))}
-          </div>
-        </div>
-      </section>
+      <HorizontalCertificates />
 
       {/* Achievements Section */}
       <section id="achievements" className="section-spacing">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading title="Key Achievements" subtitle="Recognition for hard work and dedication." />
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {ACHIEVEMENTS.map((ach, index) => {
-              const CardContent = (
-                <>
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 gradient-bg text-white rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform">
-                    {ach.icon}
-                  </div>
-                  <div className="mb-2">
-                    <span className="text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md uppercase tracking-wider">{ach.date}</span>
-                  </div>
-                  <h4 className="text-lg sm:text-xl font-bold mb-1">{ach.title}</h4>
-                  {ach.organization && (
-                    <p className="text-portfolio-primary text-xs sm:text-sm font-semibold mb-3">
-                      {ach.organization}
-                    </p>
-                  )}
-                  <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed">
-                    {ach.description}
-                  </p>
-                  {ach.link && (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-portfolio-primary font-bold text-[10px] sm:text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Profile <ChevronRight size={14} />
-                    </div>
-                  )}
-                </>
-              );
-
-              return (
+          <div className="max-w-4xl mx-auto relative">
+            {/* Timeline Vertical Line */}
+            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-portfolio-primary/20 -translate-x-1/2 hidden sm:block" />
+            
+            <div className="space-y-12">
+              {ACHIEVEMENTS.map((ach, index) => (
                 <motion.div 
                   key={ach.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-portfolio-card/60 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-portfolio-border/50 card-shadow text-center group relative overflow-hidden"
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className={`relative flex flex-col md:flex-row gap-8 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
                 >
-                  {ach.link ? (
-                    <a href={ach.link} target="_blank" rel="noopener noreferrer" className="block h-full">
-                      {CardContent}
-                    </a>
-                  ) : (
-                    CardContent
-                  )}
+                  {/* Timeline Dot */}
+                  <div className="absolute left-4 md:left-1/2 top-10 w-5 h-5 bg-portfolio-primary rounded-full -translate-x-1/2 z-10 border-4 border-portfolio-bg hidden sm:block shadow-[0_0_15px_rgba(0,122,255,0.5)]" />
+                  
+                  <div className="md:w-1/2">
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      className="bg-portfolio-card/60 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-portfolio-border/50 card-shadow group relative overflow-hidden transition-all duration-300 hover:border-portfolio-primary"
+                    >
+                      {ach.link ? (
+                        <a href={ach.link} target="_blank" rel="noopener noreferrer" className="block">
+                          <AchievementContent ach={ach} />
+                        </a>
+                      ) : (
+                        <AchievementContent ach={ach} />
+                      )}
+                    </motion.div>
+                  </div>
+                  <div className="md:w-1/2" />
                 </motion.div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </section>
