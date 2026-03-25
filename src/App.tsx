@@ -23,13 +23,14 @@ import {
   User,
   Cpu,
   Database,
+  Globe,
   Layout,
   MessageSquare,
   Utensils,
   Sun,
   Moon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
 import { GoogleGenAI } from "@google/genai";
 import Markdown from 'react-markdown';
 
@@ -130,7 +131,7 @@ const EDUCATION: Education[] = [
     degree: "B.Tech Computer Science and Engineering (Specialization in AI and ML)",
     institution: "Lovely Professional University, Phagwara, Punjab",
     year: "Aug' 2023 - Present",
-    description: "Focusing on Backend Development and Machine Learning.Completed Summer Training at Cipher School (July 2025) focused on Product Management."
+    description: "Focusing on Full Stack Development and Machine Learning.Completed Summer Training at Cipher School (July 2025) focused on Product Management."
   },
   {
     degree: "Intermediate",
@@ -147,31 +148,31 @@ const EDUCATION: Education[] = [
 ];
 
 const SKILLS = {
-  technical: [
-    { name: "Python", level: 90, icon: <Code2 size={16} /> },
-    { name: "C++", level: 81, icon: <Code2 size={16} /> },
-    { name: "Django", level: 72, icon: <Cpu size={16} /> },
-    { name: "SQL", level: 81, icon: <Database size={16} /> },
-    { name: "Pandas", level: 90, icon: <Database size={16} /> },
-    { name: "Numpy/SciPy", level: 81, icon: <Database size={16} /> },
-    { name: "Matplotlib", level: 81, icon: <Database size={16} /> },
-    { name: "Scikit-learn", level: 72, icon: <Cpu size={16} /> }
-    // { name: "Git / GitHub", level: 90, icon: <Globe size={16} /> },
-  ],
+  // technical: [
+  //   { name: "Python", level: 90, icon: <Code2 size={16} /> },
+  //   { name: "C++", level: 81, icon: <Code2 size={16} /> },
+  //   { name: "Django", level: 72, icon: <Cpu size={16} /> },
+  //   { name: "SQL", level: 81, icon: <Database size={16} /> },
+  //   { name: "Pandas", level: 90, icon: <Database size={16} /> },
+  //   { name: "Numpy/SciPy", level: 81, icon: <Database size={16} /> },
+  //   { name: "Matplotlib", level: 81, icon: <Database size={16} /> },
+  //   { name: "Scikit-learn", level: 72, icon: <Cpu size={16} /> }
+  //   // { name: "Git / GitHub", level: 90, icon: <Globe size={16} /> },
+  // ],
 
 
-  // Languages: [
-  //       { name: "Python", level: 90 },
-  //       { name: "C++", level: 85 },
-  //       { name: "C", level: 80 },
-  //       { name: "Java", level: 75 },
-  //       { name: "JavaScript", level: 80 },
-  //       { name: "SQL", level: 85 },
+  Languages: [
+        { name: "Python", level: 90 },
+        { name: "C++", level: 81 },
+        { name: "C", level: 81 },
+        { name: "Java", level: 72 },
+        { name: "JavaScript", level: 72 },
+        // { name: "SQL", level: 85 },
         // { name: "R", level: 70 },
         // { name: "Swift", level: 65 },
         // { name: "Bash", level: 75 },
         // { name: "Kotlin", level: 60 }
-      // ],
+      ],
 
 
   // technologies: [
@@ -185,45 +186,45 @@ const SKILLS = {
   //     ],
 
 
-  // Libraries_&_frameworks:[
-  //       { name: "Pandas", level: 90 },
-  //       { name: "NumPy/SciPy", level: 90 },
-  //       { name: "Matplotlib", level: 85 },
-  //       { name: "Seaborn", level: 85 },
-  //       { name: "Scikit-learn", level: 85 },
+  "Libraries_&_frameworks":[
+        { name: "Pandas", level: 90 },
+        { name: "NumPy/SciPy", level: 81 },
+        { name: "Matplotlib", level: 81 },
+        { name: "Seaborn", level: 72 },
+        { name: "Scikit-learn", level: 63 },
         // { name: "TensorFlow", level: 75 },
         // { name: "Keras", level: 75 },
         // { name: "PyTorch", level: 70 },
         // { name: "NLTK", level: 75 },
         // { name: "Hugging Face", level: 75 },
         // { name: "LangChain", level: 75 },
-        // { name: "Tkinter", level: 75 },
-        // { name: "Django/Flask", level: 80 },
+        { name: "Tkinter", level: 72 },
+        { name: "Django/Flask", level: 90 },
         // { name: "FastAPI", level: 80 },
         // { name: "React.js", level: 80 },
         // { name: "Node.js", level: 75 },
         // { name: "Express.js", level: 75 },
         // { name: "Tailwind CSS", level: 85 },
         // { name: "Bootstrap", level: 80 }
-      // ], 
+      ], 
 
 
-  // tools_&_Plateforms:[
-        // { name: "Git", level: 90 },
-        // { name: "GitHub", level: 90 },
-        // { name: "Docker", level: 75 },
-        // { name: "Kubernetes", level: 70 },
+  "tools_&_Plateforms":[
+        { name: "GitHub", level: 90 },
+        { name: "Git", level: 81 },
+        { name: "Docker", level: 72 },
+        { name: "Kubernetes", level: 63 },
         // { name: "AWS", level: 65 },
         // { name: "Terraform", level: 60 },
         // { name: "Jenkins", level: 65 },
         // { name: "Ansible", level: 60 },
         // { name: "Prometheus", level: 65 },
         // { name: "Grafana", level: 65 },
-        // { name: "Jira", level: 80 },
-        // { name: "Postman", level: 85 },
-        // { name: "Selenium", level: 75 },
-        // { name: "Figma", level: 70 },
-        // { name: "AutoCAD", level: 65 },
+        { name: "Jira", level: 81 },
+        { name: "Postman", level: 90 },
+        { name: "Selenium", level: 90 },
+        { name: "Figma", level: 81 },
+        { name: "AutoCAD", level: 63 },
         // { name: "Packet Tracer", level: 70 },
         // { name: "Proteus", level: 65 },
         // { name: "Arduino", level: 75 },
@@ -231,7 +232,7 @@ const SKILLS = {
         // { name: "Vercel", level: 80 },
         // { name: "Replit", level: 85 },
         // { name: "Streamlit", level: 85 }
-      // ],
+      ],
 
 
   // data_&_AI_tools:[
@@ -252,11 +253,11 @@ const SKILLS = {
   // ],
 
 
-  // databases:[
-  //   { name: "MySQL", level: 90 },
-  //   { name: "PostgreSQL", level: 80 },
-  //   { name: "MongoDB", level: 75 },
-  // ],
+  databases:[
+    { name: "MySQL", level: 90 },
+    { name: "PostgreSQL", level: 81 },
+    // { name: "MongoDB", level: 75 },
+  ],
 
 
   nonTechnical: [
@@ -280,6 +281,11 @@ const CERTIFICATES: Certificate[] = [
       date:"Jul' 2025", 
       link:"https://drive.google.com/file/d/1-1_So3-SDiGa3tS5sB4FuYgTxtE68EBG/view?usp=sharing"  
     },
+    { name: "Java Programming", 
+      issuer: "LPU|IamNeo", 
+      date:"May' 2025", 
+      link:"https://drive.google.com/file/d/153jUU2XIjCyH_6hWSSdrgFpNUk5bA98T/view?usp=sharing"
+    },
     { name: "Data Structures & Algorithms (C++)", 
       issuer: "Cipher School", 
       date:"Nov' 2024", 
@@ -298,6 +304,13 @@ const CERTIFICATES: Certificate[] = [
 ];
 
 const ACHIEVEMENTS: Achievement[] = [
+  {
+      title: "Dean's Top 10%",
+      organization: "LPU",
+      description: "Among the top performing students",
+      date: "Jan' 2026",
+      icon: <GraduationCap size={32} />
+    },
   {
       title: "Advisory Member",
       organization: "Student Academic Advisory Committee – LPU",
@@ -365,7 +378,10 @@ const getAIResponse = async (message: string, history: { role: string, parts: { 
       He is based in Punjab, India.
       
       SKILLS:
-      - Technical: ${SKILLS.technical.map(s => `${s.name} (${s.level}%)`).join(', ')}
+      - Languages: ${SKILLS.Languages.map(s => `${s.name} (${s.level}%)`).join(', ')}
+      - Libraries & Frameworks: ${SKILLS["Libraries_&_frameworks"].map(s => `${s.name} (${s.level}%)`).join(', ')}
+      - Tools & Platforms: ${SKILLS["tools_&_Plateforms"].map(s => `${s.name} (${s.level}%)`).join(', ')}
+      - Databases: ${SKILLS.databases.map(s => `${s.name} (${s.level}%)`).join(', ')}
       - Soft Skills: ${SKILLS.nonTechnical.map(s => `${s.name} (${s.level}%)`).join(', ')}
       
       PROJECTS:
@@ -423,9 +439,21 @@ const getAIResponse = async (message: string, history: { role: string, parts: { 
 const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme: 'light' | 'dark', toggleTheme: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setScrolled(scrollY > 50);
+      
+      // Collapse (hide) navbar when About section starts (approx 80% of hero height)
+      setIsHidden(scrollY > window.innerHeight * 0.8);
+
+      // Close mobile menu on scroll
+      if (isOpen) {
+        setIsOpen(false);
+      }
+    };
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
         setIsOpen(false);
@@ -437,15 +465,12 @@ const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme:
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isOpen]);
 
-  // Fix background scrolling when mobile menu is open
+  // Mobile menu scroll behavior
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    // We'll remove the body overflow lock as the user reported it "freezes" the screen
+    // Instead, we'll ensure the menu itself is scrollable
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -464,10 +489,12 @@ const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme:
   ];
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled || isOpen ? 'bg-portfolio-bg border-b border-portfolio-border py-3 shadow-lg' : 'bg-transparent py-5'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+    <>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'py-2 sm:py-4' : 'py-4 sm:py-6'} ${isHidden && !isOpen ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`flex justify-between items-center px-4 sm:px-6 py-2 sm:py-3 rounded-full border transition-all duration-500 ${scrolled || isOpen ? 'bg-portfolio-card/80 backdrop-blur-xl border-portfolio-border/50 card-shadow' : 'bg-transparent border-transparent'}`}>
         <a href="#home" className="text-xl sm:text-2xl font-bold tracking-tighter text-portfolio-dark">
-          HKJ<span className="text-portfolio-primary"></span>
+          <span className="text-portfolio-primary"></span>
         </a>
 
         {/* Desktop Menu */}
@@ -485,7 +512,7 @@ const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme:
           {/* Theme Toggle Button (Desktop) */}
           <button
             onClick={toggleTheme}
-            className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-lg transition-all"
+            className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-full transition-all"
             aria-label="Toggle Theme"
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -496,13 +523,13 @@ const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme:
         <div className="flex items-center gap-2 lg:hidden">
           <button
             onClick={toggleTheme}
-            className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-lg transition-all"
+            className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-full transition-all"
             aria-label="Toggle Theme"
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <button 
-            className="p-2 text-portfolio-dark hover:bg-portfolio-primary/10 rounded-lg transition-colors" 
+            className="p-2 text-portfolio-dark hover:bg-portfolio-primary/10 rounded-full transition-colors" 
             onClick={() => setIsOpen(true)}
             aria-label="Open Menu"
           >
@@ -510,77 +537,78 @@ const Navbar = ({ openChat, theme, toggleTheme }: { openChat: () => void, theme:
           </button>
         </div>
       </div>
+    </div>
+  </nav>
 
-      {/* Mobile Menu Overlay */}
+    {/* Floating Hamburger Button when navbar is hidden */}
+    <AnimatePresence>
+      {isHidden && !isOpen && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0, y: -20 }}
+          onClick={() => setIsOpen(true)}
+          className="fixed top-6 right-6 z-[55] p-4 bg-portfolio-card/80 backdrop-blur-xl border border-portfolio-border/50 rounded-full text-portfolio-primary shadow-2xl hover:scale-110 active:scale-95 transition-transform"
+          aria-label="Toggle Menu"
+        >
+          <Menu size={24} />
+        </motion.button>
+      )}
+    </AnimatePresence>
+
+    {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
-            />
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[280px] sm:w-[320px] bg-portfolio-bg z-[60] flex flex-col p-6 shadow-2xl lg:hidden overflow-y-auto overscroll-contain"
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 z-[60] bg-portfolio-bg/95 backdrop-blur-2xl flex flex-col items-center justify-start py-20 overflow-y-auto"
+          >
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="absolute top-6 right-6 p-2 text-portfolio-dark hover:bg-portfolio-primary/10 rounded-full transition-colors"
+              aria-label="Close Menu"
             >
-              <div className="flex justify-between items-center mb-8">
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 text-portfolio-text hover:text-portfolio-primary hover:bg-portfolio-primary/10 rounded-lg transition-all"
-                  aria-label="Toggle Theme"
+              <X size={32} />
+            </button>
+            
+            <div className="flex flex-col items-center gap-8">
+              {navLinks.map((link, index) => (
+                <motion.a 
+                  key={link.name} 
+                  href={link.href} 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setIsOpen(false)}
+                  className="text-3xl font-bold text-portfolio-dark hover:text-portfolio-primary transition-colors"
                 >
-                  {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-                </button>
-                <button 
-                  onClick={() => setIsOpen(false)} 
-                  className="p-2 text-portfolio-dark hover:bg-portfolio-primary/10 rounded-lg transition-colors"
-                  aria-label="Close Menu"
-                >
-                  <X size={28} />
-                </button>
-              </div>
-              <div className="flex flex-col gap-4">
-                {navLinks.map((link, index) => (
-                  <motion.a 
-                    key={link.name} 
-                    href={link.href} 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => setIsOpen(false)}
-                    className="text-xl font-bold text-portfolio-dark hover:text-portfolio-primary transition-colors py-2 border-b border-portfolio-border/50"
-                  >
-                    {link.name}
-                  </motion.a>
-                ))}
-              </div>
-              <div className="mt-auto pt-8 flex justify-center gap-6">
-                <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
-                  <Github size={20} />
-                </a>
-                <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain/" target="_blank" rel="noopener noreferrer" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
-                  <Linkedin size={20} />
-                </a>
-                <a href="mailto:himanshukhajanchijain@gmail.com" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
-                  <Mail size={20} />
-                </a>
-              </div>
-            </motion.div>
-          </>
+                  {link.name}
+                </motion.a>
+              ))}
+            </div>
+            
+            <div className="mt-12 flex justify-center gap-8">
+              <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
+                <Github size={24} />
+              </a>
+              <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain/" target="_blank" rel="noopener noreferrer" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
+                <Linkedin size={24} />
+              </a>
+              <a href="mailto:himanshukhajanchijain@gmail.com" className="text-portfolio-text hover:text-portfolio-primary transition-colors">
+                <Mail size={24} />
+              </a>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };
 
 const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-  <div className="mb-12 sm:mb-16 text-center px-4">
+  <div className="mb-12 sm:mb-16 text-center px-4 relative z-10">
     <motion.h2 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -600,35 +628,237 @@ const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string 
         {subtitle}
       </motion.p>
     )}
-    <div className="w-16 sm:w-20 h-1.5 gradient-bg mx-auto mt-4 sm:mt-6 rounded-full" />
+    <div className="w-12 sm:w-16 h-1 bg-portfolio-primary mx-auto mt-4 sm:mt-6 rounded-full opacity-50" />
   </div>
 );
 
-const SkillCard = ({ name, level, icon }: { name: string; level: number; icon?: React.ReactNode }) => (
-  <div className="bg-portfolio-card p-4 sm:p-6 rounded-2xl border border-portfolio-border card-shadow group hover:border-portfolio-primary transition-all duration-300">
-    <div className="flex items-center justify-between mb-3 sm:mb-4">
-      <div className="flex items-center gap-2 sm:gap-3">
-        {icon && <div className="text-portfolio-primary scale-90 sm:scale-100">{icon}</div>}
-        <h4 className="font-semibold text-portfolio-dark text-sm sm:text-base">{name}</h4>
-      </div>
-      <span className="text-[10px] sm:text-xs font-bold text-portfolio-primary">{level}%</span>
-    </div>
-    <div className="h-1.5 sm:h-2 bg-portfolio-bg rounded-full overflow-hidden">
+const FluidBackground = ({ theme }: { theme: 'light' | 'dark' }) => {
+  const { scrollYProgress } = useScroll();
+  
+  // Apple System Colors (Light/Dark variants)
+  const lightColors = [
+    '#F5F5F7', // Default Gray
+    '#E0F2FE', // Blue/Sky
+    '#DCFCE7', // Green
+    '#F3E8FF', // Purple
+    '#FFEDD5', // Orange
+    '#FCE7F3', // Pink
+    '#F5F5F7'
+  ];
+
+  const darkColors = [
+    '#000000', // Default Black
+    '#001D3D', // Deep Blue
+    '#00261A', // Deep Green
+    '#1A0033', // Deep Purple
+    '#331A00', // Deep Orange
+    '#33001A', // Deep Pink
+    '#000000'
+  ];
+
+  const colors = theme === 'light' ? lightColors : darkColors;
+
+  const backgroundColor = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.4, 0.6, 0.8, 0.9, 1],
+    colors
+  );
+
+  return (
+    <>
       <motion.div 
-        initial={{ width: 0 }}
-        whileInView={{ width: `${level}%` }}
-        viewport={{ once: true }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className="h-full gradient-bg"
-      />
-    </div>
+        className="fluid-bg"
+        style={{ backgroundColor }}
+      >
+        {/* Subtle Gradient Overlay */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${theme === 'light' ? 'from-white/20 via-transparent to-black/5' : 'from-white/5 via-transparent to-black/20'} pointer-events-none`} />
+        
+        {/* Fluid Blobs - Apple-like soft glows */}
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] ${theme === 'light' ? 'bg-portfolio-primary/5' : 'bg-portfolio-primary/10'} rounded-full blur-[100px]`}
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.1, 1],
+            rotate: [0, -45, 0],
+            x: [0, -40, 0],
+            y: [0, 60, 0]
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] ${theme === 'light' ? 'bg-portfolio-secondary/5' : 'bg-portfolio-secondary/10'} rounded-full blur-[100px]`}
+        />
+      </motion.div>
+      <div className={`glitter-overlay ${theme === 'light' ? 'opacity-[0.01]' : 'opacity-[0.03]'}`} />
+    </>
+  );
+};
+
+const SkillCard = ({ name, icon }: { name: string; icon?: React.ReactNode }) => (
+  <div className="bg-white/10 backdrop-blur-md p-2.5 sm:p-3.5 rounded-xl border border-white/10 shadow-sm transition-all duration-300 flex items-center gap-3 hover:bg-white/20 hover:scale-105 group overflow-hidden">
+    {icon && <div className="opacity-70 group-hover:opacity-100 transition-opacity shrink-0">{React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}</div>}
+    <span className="font-bold text-xs sm:text-sm truncate tracking-tight">{name}</span>
   </div>
 );
+
+const SkillCategory = ({ title, icon, skills, colorClass }: { title: string, icon: React.ReactNode, skills: any[], colorClass: string }) => (
+  <div className="w-screen h-screen flex-shrink-0 flex items-center justify-center p-4 sm:p-8 lg:p-12">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.8 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
+      className={`p-6 sm:p-10 lg:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] backdrop-blur-3xl border-2 shadow-2xl w-full max-w-5xl flex flex-col items-center justify-center ${colorClass}`}
+    >
+      <div className="mb-6 sm:mb-10 text-center">
+        <motion.div 
+          initial={{ y: -20, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="inline-flex p-3 sm:p-5 bg-white/20 rounded-2xl sm:rounded-[1.5rem] shadow-xl mb-4 sm:mb-6 border border-white/20"
+        >
+          {React.cloneElement(icon as React.ReactElement<any>, { size: 40, className: "sm:w-12 sm:h-12" })}
+        </motion.div>
+        <motion.h3 
+          initial={{ y: 20, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tighter"
+        >
+          {title}
+        </motion.h3>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full overflow-y-auto max-h-[50vh] pr-2 custom-scrollbar">
+        {skills.map((skill, i) => (
+          <motion.div
+            key={skill.name}
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + i * 0.05 }}
+          >
+            <SkillCard name={skill.name} icon={icon} />
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  </div>
+);
+
+const HorizontalSkills = () => {
+  const targetRef = useRef<HTMLDivElement>(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const updateWidth = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+  });
+
+  // Heading animations: Moves up and fades out in the first 25% of scroll
+  const headingY = useTransform(scrollYProgress, [0, 0.25, 0.35], [0, 0, -250]);
+  const headingOpacity = useTransform(scrollYProgress, [0, 0.22, 0.3], [1, 1, 0]);
+  const headingScale = useTransform(scrollYProgress, [0, 0.25, 0.35], [1, 1, 0.8]);
+
+  // Horizontal movement: 
+  // 0.00 - 0.25: Heading Intro (Categories off-screen)
+  // 0.25 - 0.35: Languages slide in
+  // 0.35 - 0.40: Languages stay
+  // 0.40 - 0.50: Libraries slide in
+  // 0.50 - 0.55: Libraries stay
+  // 0.55 - 0.65: Tools slide in
+  // 0.65 - 0.70: Tools stay
+  // 0.70 - 0.80: Databases slide in
+  // 0.80 - 0.85: Databases stay
+  // 0.85 - 0.95: Soft Skills slide in
+  // 0.95 - 1.00: Soft Skills stay
+  const xRaw = useTransform(
+    scrollYProgress,
+    [0, 0.25, 0.35, 0.40, 0.50, 0.55, 0.65, 0.70, 0.80, 0.85, 0.95, 1],
+    [windowWidth, windowWidth, 0, 0, -windowWidth, -windowWidth, -2 * windowWidth, -2 * windowWidth, -3 * windowWidth, -3 * windowWidth, -4 * windowWidth, -4 * windowWidth]
+  );
+
+  const x = useSpring(xRaw, { stiffness: 80, damping: 25, mass: 0.5 });
+  const containerOpacity = useTransform(scrollYProgress, [0.22, 0.28], [0, 1]);
+
+  const categories = [
+    { title: "Languages", icon: <Code2 />, skills: SKILLS.Languages, color: "bg-blue-500/10 border-blue-500/40 text-blue-600 dark:text-blue-300" },
+    { title: "Libraries & Frameworks", icon: <Cpu />, skills: SKILLS["Libraries_&_frameworks"], color: "bg-purple-500/10 border-purple-500/40 text-purple-600 dark:text-purple-300" },
+    { title: "Tools & Platforms", icon: <Globe />, skills: SKILLS["tools_&_Plateforms"], color: "bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-300" },
+    { title: "Databases", icon: <Database />, skills: SKILLS.databases, color: "bg-orange-500/10 border-orange-500/40 text-orange-600 dark:text-orange-300" },
+    { title: "Soft Skills", icon: <Layout />, skills: SKILLS.nonTechnical, color: "bg-pink-500/10 border-pink-500/40 text-pink-600 dark:text-pink-300" },
+  ];
+
+  return (
+    <section ref={targetRef} className="relative h-[700vh] bg-portfolio-bg/10">
+      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-portfolio-primary/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-portfolio-secondary/20 rounded-full blur-[120px]" />
+        </div>
+
+        {/* Sticky Heading that moves up */}
+        <motion.div 
+          style={{ y: headingY, opacity: headingOpacity, scale: headingScale }}
+          className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none px-4"
+        >
+          <SectionHeading title="My Expertise" subtitle="Explore my technical toolkit one category at a time." />
+        </motion.div>
+        
+        {/* Horizontal Categories container */}
+        <motion.div 
+          style={{ x, opacity: containerOpacity }} 
+          className="flex h-full items-center"
+        >
+          {categories.map((cat, i) => (
+            <SkillCategory 
+              key={i}
+              title={cat.title} 
+              icon={cat.icon} 
+              skills={cat.skills} 
+              colorClass={cat.color}
+            />
+          ))}
+        </motion.div>
+
+        {/* Progress Dots */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-30">
+          {categories.map((_, i) => {
+            // Adjust range for progress dots
+            const start = 0.25 + (i * (0.75 / categories.length));
+            const end = 0.25 + ((i + 1) * (0.75 / categories.length));
+            const range = [start, (start + end) / 2, end];
+            
+            const scale = useTransform(scrollYProgress, range, [1, 1.5, 1]);
+            const opacity = useTransform(scrollYProgress, range, [0.3, 1, 0.3]);
+            
+            return (
+              <motion.div
+                key={i}
+                style={{ scale, opacity }}
+                className="w-3 h-3 rounded-full bg-portfolio-primary shadow-lg"
+              />
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const ProjectCard = ({ project }: { project: Project }) => (
   <motion.div 
     whileHover={{ y: -10 }}
-    className="bg-portfolio-card rounded-3xl overflow-hidden border border-portfolio-border card-shadow group h-full flex flex-col"
+    className="bg-portfolio-card/70 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-portfolio-border/50 card-shadow group h-full flex flex-col transition-all duration-500"
   >
     <div className="relative h-48 sm:h-64 overflow-hidden">
       <img 
@@ -654,13 +884,13 @@ const ProjectCard = ({ project }: { project: Project }) => (
     </div>
     <div className="p-5 sm:p-8 flex-1 flex flex-col">
       <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
-        <h3 className="text-lg sm:text-xl font-bold group-hover:text-portfolio-primary transition-colors line-clamp-1">{project.title}</h3>
+        <h3 className="text-lg sm:text-xl font-bold group-hover:text-portfolio-primary transition-colors line-clamp-1 group-hover:line-clamp-none">{project.title}</h3>
         <span className="text-[9px] sm:text-[10px] font-bold text-portfolio-primary bg-portfolio-primary/10 px-2 py-1 rounded-md whitespace-nowrap">{project.date}</span>
       </div>
-      <p className="text-portfolio-text text-xs sm:text-sm mb-4 sm:mb-6 line-clamp-2 flex-1">{project.description}</p>
+      <p className="text-portfolio-text text-xs sm:text-sm mb-4 sm:mb-6 line-clamp-2 group-hover:line-clamp-none flex-1">{project.description}</p>
       <div className="flex flex-wrap gap-1.5 sm:gap-2">
         {project.tags.map(tag => (
-          <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 sm:px-3 py-1 bg-portfolio-bg text-portfolio-text rounded-full border border-portfolio-border">
+          <span key={tag} className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 sm:px-3 py-1 bg-portfolio-bg/50 text-portfolio-text rounded-full border border-portfolio-border/30">
             {tag}
           </span>
         ))}
@@ -669,12 +899,82 @@ const ProjectCard = ({ project }: { project: Project }) => (
   </motion.div>
 );
 
+const CertificateCard = ({ cert, index }: { cert: Certificate, index: number }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const getPreviewUrl = (url: string) => {
+    if (!url) return '';
+    return url.replace('/view?usp=sharing', '/preview').replace('/view?usp=drive_link', '/preview');
+  };
+
+  const CardContent = (
+    <div className="flex items-start gap-4 w-full h-full">
+      <div className="p-3 bg-portfolio-bg rounded-2xl text-portfolio-secondary group-hover:scale-110 transition-transform shrink-0">
+        <Award size={24} />
+      </div>
+      <div className="min-w-0">
+        <h4 className="font-bold text-portfolio-dark mb-1 text-sm sm:text-base truncate">{cert.name}</h4>
+        <p className="text-xs sm:text-sm text-portfolio-text mb-2 truncate">{cert.issuer}</p>
+        <span className="text-[10px] sm:text-xs font-bold text-portfolio-secondary">{cert.date}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="relative">
+      <motion.div 
+        key={cert.name}
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: index * 0.1 }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`p-5 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 hover:border-portfolio-secondary transition-all duration-500 group relative z-10 ${cert.link ? 'cursor-pointer' : ''}`}
+      >
+        {cert.link ? (
+          <a href={cert.link} target="_blank" rel="noopener noreferrer">
+            {CardContent}
+          </a>
+        ) : (
+          CardContent
+        )}
+      </motion.div>
+
+      <AnimatePresence>
+        {isHovered && cert.link && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.8, rotateX: -10 }}
+            animate={{ opacity: 1, y: -20, scale: 1, rotateX: 0 }}
+            exit={{ opacity: 0, y: 10, scale: 0.9, rotateX: -5 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="absolute bottom-full left-0 right-0 z-50 mb-4 h-64 sm:h-80 bg-portfolio-card rounded-3xl border-2 border-portfolio-secondary/30 shadow-2xl overflow-hidden pointer-events-none origin-bottom"
+            style={{ perspective: "1000px" }}
+          >
+            <div className="absolute inset-0 bg-portfolio-bg/50 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-portfolio-secondary" />
+            </div>
+            <iframe 
+              src={getPreviewUrl(cert.link)} 
+              className="w-full h-full relative z-10 border-none"
+              title={`Preview of ${cert.name}`}
+            />
+            <div className="absolute top-3 right-3 z-20 px-3 py-1 bg-portfolio-secondary text-white text-[10px] font-bold rounded-full shadow-lg">
+              PREVIEW
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const InternshipCard = ({ internship }: { internship: Internship }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
-    className="bg-portfolio-card p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-portfolio-border card-shadow hover:border-portfolio-primary transition-all duration-300 group"
+    className="bg-portfolio-card/70 backdrop-blur-xl p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-portfolio-border/50 card-shadow hover:border-portfolio-primary transition-all duration-500 group"
   >
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 sm:mb-6 gap-4">
       <div className="flex items-center gap-3 sm:gap-4">
@@ -686,13 +986,13 @@ const InternshipCard = ({ internship }: { internship: Internship }) => (
           <p className="text-portfolio-primary font-semibold text-sm sm:text-base">{internship.organization}</p>
         </div>
       </div>
-      <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-portfolio-bg rounded-full text-[10px] sm:text-xs font-bold text-portfolio-text border border-portfolio-border">
+      <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-portfolio-bg/50 rounded-full text-[10px] sm:text-xs font-bold text-portfolio-text border border-portfolio-border/30">
         {internship.duration}
       </span>
     </div>
     
     <div className="space-y-4">
-      <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed font-medium bg-portfolio-bg/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-portfolio-border/50">
+      <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed font-medium bg-portfolio-bg/30 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-portfolio-border/20">
         {internship.shortDescription}
       </p>
       
@@ -873,111 +1173,79 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-portfolio-bg transition-colors duration-300">
+    <div className="min-h-screen bg-transparent transition-colors duration-500 relative">
+      <FluidBackground theme={theme} />
       <Navbar openChat={openChat} theme={theme} toggleTheme={toggleTheme} />
 
       {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex items-center pt-24 pb-12 overflow-hidden">
-        {/* Background Blobs */}
-        <div className="absolute top-[-10%] right-[-10%] w-[70%] md:w-[50%] h-[50%] bg-portfolio-primary/5 rounded-full blur-[120px] -z-10" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[70%] md:w-[50%] h-[50%] bg-portfolio-secondary/5 rounded-full blur-[120px] -z-10" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center lg:text-left order-2 lg:order-1"
+            className="text-center max-w-3xl mx-auto"
           >
             <span className="inline-block px-4 py-2 rounded-full bg-portfolio-primary/10 text-portfolio-primary text-xs sm:text-sm font-bold mb-6">
               Available for Opportunities
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6">
-              Hello, I'm <span className="gradient-text">Himanshu Khajanchi</span>
+              Hello, I'm <span className="gradient-text">Himanshu Khajanchi Jain</span>
             </h1>
-            <p className="text-lg sm:text-xl text-portfolio-text mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              A Computer Science undergraduate passionate about backend development, problem solving, and machine learning.
+            <p className="text-lg sm:text-xl text-portfolio-text mb-10 leading-relaxed">
+              A Computer Science undergraduate passionate about Full Stack Development, Problem Solving,Machine Learning and Entrepreneurship.
             </p>
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start">
-              <a href="#projects" className="px-8 py-4 gradient-bg text-white rounded-2xl font-bold shadow-lg shadow-portfolio-primary/20 hover:scale-105 active:scale-95 transition-transform">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center">
+              <a href="#projects" className="px-8 py-4 bg-portfolio-primary text-white rounded-full font-bold shadow-lg shadow-portfolio-primary/20 hover:scale-105 active:scale-95 transition-transform">
                 View Projects
               </a>
               <a 
                 href={RESUME_DOWNLOAD_LINK} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="px-8 py-4 bg-portfolio-card border border-portfolio-border text-portfolio-dark rounded-2xl font-bold hover:bg-portfolio-primary/10 active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="px-8 py-4 bg-portfolio-card/80 backdrop-blur-xl border border-portfolio-border/50 text-portfolio-dark rounded-full font-bold hover:bg-portfolio-primary/10 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <Download size={18} />
                 Download Resume
               </a>
             </div>
           </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative order-1 lg:order-2"
-          >
-            <div className="relative z-10 w-full aspect-square max-w-[280px] sm:max-w-sm md:max-w-md mx-auto rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden border-4 sm:border-8 border-slate-800 card-shadow">
-              <img 
-                src="/himan-photo.jpg" 
-                alt="Himanshu Khajanchi" 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            {/* Decorative Elements */}
-            <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-16 h-16 sm:w-24 sm:h-24 bg-portfolio-secondary rounded-full -z-10 animate-pulse" />
-            <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 w-20 h-20 sm:w-32 sm:h-32 border-4 border-portfolio-primary rounded-full -z-10" />
-          </motion.div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="section-spacing bg-portfolio-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="About Me" subtitle="Passionate about technology and continuous learning." />
+      <section id="about" className="section-spacing relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <SectionHeading title="About Me" subtitle="Passionate about bussiness,technology and continuous learning." />
           
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className="max-w-4xl mx-auto">
             <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="relative hidden sm:block"
+              className="space-y-8 text-center"
             >
-              <div className="rounded-3xl overflow-hidden card-shadow border border-portfolio-border aspect-[4/5] lg:aspect-auto">
-                <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=800&h=1000" alt="Computer Science" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-6 text-center sm:text-left"
-            >
-              <h3 className="text-2xl sm:text-3xl font-bold">I'm a Computer Science student focused on Backend & ML.</h3>
-              <p className="text-portfolio-text leading-relaxed text-sm sm:text-base">
-                I am a Computer Science undergraduate at Lovely Professional University with a strong passion for backend development, problem solving, and machine learning applications. I enjoy building scalable and efficient systems using modern frameworks and applying clean coding practices to ensure maintainable software.
-                My primary expertise lies in Python and C++. I have experience developing backend services using Django and building machine learning solutions using Scikit-learn, Pandas, and NumPy. I am particularly interested in designing RESTful APIs and implementing clean architecture.
+              <h3 className="text-2xl sm:text-3xl font-bold">I'm a Computer Science student focused on Full Stack & ML.</h3>
+              <p className="text-portfolio-text leading-relaxed text-sm sm:text-base max-w-3xl mx-auto">
+                I am a Computer Science undergraduate at Lovely Professional University with a deep-rooted passion for architecting scalable Full Stack applications and exploring the frontiers of Machine Learning. My journey is driven by a curiosity to solve complex problems through elegant code and data-driven insights.
+                <br /><br />
+                With a solid foundation in Python and C++, I specialize in building robust backend architectures using Django and crafting intelligent solutions with Scikit-learn, Pandas, and NumPy. I thrive in environments that challenge me to implement clean architecture and design seamless RESTful APIs that bridge the gap between complex data and intuitive user experiences.
               </p>
-              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="p-5 sm:p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border text-left">
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto">
+                <div className="p-5 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 text-left transition-all duration-500 hover:border-portfolio-primary">
                   <User className="text-portfolio-primary mb-4" size={24} />
                   <h4 className="font-bold mb-2">Personal Info</h4>
                   <ul className="text-xs sm:text-sm space-y-2 text-portfolio-text">
-                    <li><span className="font-semibold text-portfolio-dark">Name:</span> Himanshu Khajanchi</li>
+                    <li><span className="font-semibold text-portfolio-dark">Name:</span> Himanshu Khajanchi Jain</li>
                     <li><span className="font-semibold text-portfolio-dark">Education:</span> B.Tech CSE (AI & ML)</li>
                     <li><span className="font-semibold text-portfolio-dark">Location:</span> Rajasthan, India</li>
                   </ul>
                 </div>
-                <div className="p-5 sm:p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border text-left">
+                <div className="p-5 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 text-left transition-all duration-500 hover:border-portfolio-secondary">
                   <Briefcase className="text-portfolio-secondary mb-4" size={24} />
                   <h4 className="font-bold mb-2">Interests</h4>
                   <ul className="text-xs sm:text-sm space-y-2 text-portfolio-text">
-                    <li>Backend Development</li>
+                    <li>Full Stack Development</li>
                     <li>Machine Learning</li>
                     <li>DSA & Problem Solving</li>
                   </ul>
@@ -989,49 +1257,11 @@ export default function App() {
       </section>
 
       {/* Skills Section */}
-      <section id="skills" className="section-spacing">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading title="My Expertise" subtitle="A comprehensive toolkit of technical and professional skills." />
-          
-          <div className="space-y-16">
-            <div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-8 flex items-center gap-3">
-                <div className="p-2 bg-portfolio-primary/10 rounded-lg">
-                  <Code2 className="text-portfolio-primary" size={24} />
-                </div>
-                Technical Proficiency
-              </h3>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {SKILLS.technical.map(skill => (
-                  <React.Fragment key={skill.name}>
-                    <SkillCard name={skill.name} level={skill.level} icon={skill.icon} />
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-8 flex items-center gap-3">
-                <div className="p-2 bg-portfolio-secondary/10 rounded-lg">
-                  <Layout className="text-portfolio-secondary" size={24} />
-                </div>
-                Soft Skills
-              </h3>
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-                {SKILLS.nonTechnical.map(skill => (
-                  <React.Fragment key={skill.name}>
-                    <SkillCard name={skill.name} level={skill.level} />
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HorizontalSkills />
 
       {/* Education Section */}
-      <section id="education" className="section-spacing bg-portfolio-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="education" className="section-spacing relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionHeading title="Education Journey" subtitle="My academic background and milestones." />
           
           <div className="max-w-4xl mx-auto relative">
@@ -1052,9 +1282,9 @@ export default function App() {
                   <div className="absolute left-4 md:left-1/2 top-8 w-4 h-4 bg-portfolio-primary rounded-full -translate-x-1/2 z-10 border-4 border-slate-900 hidden sm:block" />
                   
                   <div className="md:w-1/2">
-                    <div className="bg-portfolio-bg p-6 sm:p-8 rounded-3xl border border-portfolio-border card-shadow hover:border-portfolio-primary transition-colors">
+                    <div className="bg-portfolio-card/70 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-portfolio-border/50 card-shadow hover:border-portfolio-primary transition-all duration-500">
                       <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-portfolio-bg rounded-2xl text-portfolio-primary shrink-0">
+                        <div className="p-3 bg-portfolio-bg/50 rounded-2xl text-portfolio-primary shrink-0">
                           <GraduationCap size={24} />
                         </div>
                         <div>
@@ -1062,7 +1292,7 @@ export default function App() {
                           <p className="text-portfolio-primary text-xs sm:text-sm font-semibold mt-1">{edu.institution}</p>
                         </div>
                       </div>
-                      <span className="inline-block px-3 py-1 bg-portfolio-bg rounded-full text-[10px] sm:text-xs font-bold text-portfolio-text mb-4 border border-portfolio-border">
+                      <span className="inline-block px-3 py-1 bg-portfolio-bg/50 rounded-full text-[10px] sm:text-xs font-bold text-portfolio-text mb-4 border border-portfolio-border/30">
                         {edu.year}
                       </span>
                       <p className="text-portfolio-text text-xs sm:text-sm leading-relaxed">
@@ -1106,44 +1336,14 @@ export default function App() {
       </section>
 
       {/* Certificates Section */}
-      <section id="certificates" className="section-spacing bg-portfolio-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="certificates" className="section-spacing relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionHeading title="Certificates" subtitle="Validating my skills through industry-recognized programs." />
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {CERTIFICATES.map((cert, index) => {
-              const CardContent = (
-                <>
-                  <div className="p-3 bg-portfolio-bg rounded-xl text-portfolio-secondary group-hover:scale-110 transition-transform shrink-0">
-                    <Award size={24} />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="font-bold text-portfolio-dark mb-1 text-sm sm:text-base truncate">{cert.name}</h4>
-                    <p className="text-xs sm:text-sm text-portfolio-text mb-2 truncate">{cert.issuer}</p>
-                    <span className="text-[10px] sm:text-xs font-bold text-portfolio-secondary">{cert.date}</span>
-                  </div>
-                </>
-              );
-
-              return (
-                <motion.div 
-                  key={cert.name}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`p-5 sm:p-6 bg-portfolio-bg rounded-2xl border border-portfolio-border flex items-start gap-4 hover:border-portfolio-secondary transition-colors group ${cert.link ? 'cursor-pointer' : ''}`}
-                >
-                  {cert.link ? (
-                    <a href={cert.link} target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 w-full h-full">
-                      {CardContent}
-                    </a>
-                  ) : (
-                    CardContent
-                  )}
-                </motion.div>
-              );
-            })}
+            {CERTIFICATES.map((cert, index) => (
+              <CertificateCard key={cert.name} cert={cert} index={index} />
+            ))}
           </div>
         </div>
       </section>
@@ -1187,7 +1387,7 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-portfolio-card p-6 sm:p-8 rounded-3xl border border-portfolio-border card-shadow text-center group relative overflow-hidden"
+                  className="bg-portfolio-card/60 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-portfolio-border/50 card-shadow text-center group relative overflow-hidden"
                 >
                   {ach.link ? (
                     <a href={ach.link} target="_blank" rel="noopener noreferrer" className="block h-full">
@@ -1257,8 +1457,8 @@ export default function App() {
               </p>
               
               <div className="space-y-4 sm:space-y-6">
-                <a href="mailto:himanshukhajanchijain@gmail.com" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-primary transition-colors group text-left">
-                  <div className="p-3 sm:p-4 bg-portfolio-primary/10 text-portfolio-primary rounded-xl group-hover:bg-portfolio-primary group-hover:text-white transition-colors shrink-0">
+                <a href="mailto:himanshukhajanchijain@gmail.com" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 card-shadow hover:border-portfolio-primary transition-all duration-500 group text-left">
+                  <div className="p-3 sm:p-4 bg-portfolio-primary/10 text-portfolio-primary rounded-2xl group-hover:bg-portfolio-primary group-hover:text-white transition-colors shrink-0">
                     <Mail size={24} />
                   </div>
                   <div className="min-w-0">
@@ -1266,8 +1466,8 @@ export default function App() {
                     <p className="font-bold text-portfolio-dark text-sm sm:text-base truncate">himanshukhajanchijain@gmail.com</p>
                   </div>
                 </a>
-                <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-secondary transition-colors group text-left">
-                  <div className="p-3 sm:p-4 bg-portfolio-secondary/10 text-portfolio-secondary rounded-xl group-hover:bg-portfolio-secondary group-hover:text-white transition-colors shrink-0">
+                <a href="https://www.linkedin.com/in/khajanchi-himanshu-jain" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 card-shadow hover:border-portfolio-secondary transition-all duration-500 group text-left">
+                  <div className="p-3 sm:p-4 bg-portfolio-secondary/10 text-portfolio-secondary rounded-2xl group-hover:bg-portfolio-secondary group-hover:text-white transition-colors shrink-0">
                     <Linkedin size={24} />
                   </div>
                   <div className="min-w-0">
@@ -1275,8 +1475,8 @@ export default function App() {
                     <p className="font-bold text-portfolio-dark text-sm sm:text-base truncate">linkedin.com/in/khajanchi-himanshu-jain</p>
                   </div>
                 </a>
-                <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card rounded-2xl border border-portfolio-border card-shadow hover:border-portfolio-dark transition-colors group text-left">
-                  <div className="p-3 sm:p-4 bg-portfolio-dark/5 text-portfolio-dark rounded-xl group-hover:bg-portfolio-dark group-hover:text-white transition-colors shrink-0">
+                <a href="https://github.com/TheHKJ04" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-portfolio-card/70 backdrop-blur-xl rounded-3xl border border-portfolio-border/50 card-shadow hover:border-portfolio-dark transition-all duration-500 group text-left">
+                  <div className="p-3 sm:p-4 bg-portfolio-dark/5 text-portfolio-dark rounded-2xl group-hover:bg-portfolio-dark group-hover:text-white transition-colors shrink-0">
                     <Github size={24} />
                   </div>
                   <div className="min-w-0">
@@ -1291,7 +1491,7 @@ export default function App() {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className={`bg-portfolio-card p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border transition-all duration-500 ${submitStatus === 'success' ? 'border-portfolio-primary shadow-2xl shadow-portfolio-primary/30' : 'border-portfolio-border card-shadow'}`}
+              className={`bg-portfolio-card/70 backdrop-blur-xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border transition-all duration-500 ${submitStatus === 'success' ? 'border-portfolio-primary shadow-2xl shadow-portfolio-primary/30' : 'border-portfolio-border/50 card-shadow'}`}
             >
               <form onSubmit={handleContactSubmit} className="space-y-4 sm:space-y-6">
                 <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
@@ -1355,7 +1555,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-portfolio-card border-t border-portfolio-border">
+      <footer className="py-12 border-t border-portfolio-border relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left">
             <a href="#home" className="text-xl sm:text-2xl font-bold tracking-tighter text-portfolio-dark mb-4 block">
